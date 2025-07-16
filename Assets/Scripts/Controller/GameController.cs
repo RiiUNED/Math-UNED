@@ -43,6 +43,15 @@ namespace MultiplicationGame.Controller
             }
         }
 
+        public void SaltarEjercicio()
+        {
+            if (_session == null || _session.IsFinished)
+                return;
+
+            _session.ForzarNuevoEjercicio();
+            EmitirPregunta();
+        }
+
         private void EmitirPregunta()
         {
             var ejercicio = _session.CurrentExercise;

@@ -28,8 +28,16 @@ namespace MultiplicationGame.Model
             if (CurrentExercise.EsRespuestaCorrecta(answer))
             {
                 CorrectAnswers++;
+
+                if (!IsFinished)
+                    GenerateNewExercise();
             }
 
+            // Si se falla, el ejercicio actual permanece
+        }
+
+        public void ForzarNuevoEjercicio()
+        {
             if (!IsFinished)
                 GenerateNewExercise();
         }

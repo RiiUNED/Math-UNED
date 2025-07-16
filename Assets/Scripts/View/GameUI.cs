@@ -16,6 +16,7 @@ namespace MultiplicationGame.View
         public TextMeshProUGUI resultadoFinalText;
         public Button botonEnviar;
         public Button botonIniciar;
+        public Button botonSkip;
 
         [Header("Progreso de aciertos")]
         public Image[] puntosAcierto;
@@ -38,6 +39,11 @@ namespace MultiplicationGame.View
 
             botonEnviar.onClick.AddListener(EnviarRespuesta);
             botonIniciar.onClick.AddListener(IniciarJuego);
+            botonSkip.onClick.AddListener(SaltarPregunta);
+
+            if (botonSkip != null)
+                botonSkip.onClick.AddListener(SaltarPregunta);
+
         }
 
         private void IniciarJuego()
@@ -57,6 +63,11 @@ namespace MultiplicationGame.View
                 inputField.text = "";
                 inputField.ActivateInputField();
             }
+        }
+
+        public void SaltarPregunta()
+        {
+            controlador.SaltarEjercicio();
         }
 
         public void ActualizarPregunta(string texto)

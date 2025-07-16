@@ -25,12 +25,33 @@ namespace Tests.Model
         }
 
         [Test]
-        public void SubmitAnswer_RespuestaIncorrecta_NoCuentaAcierto()
+        public void SubmitAnswer_RespuestaIncorrecta_NoCuentaAcierto_YRepiteEjercicio()
         {
             var session = new GameSession(4);
-            int respuesta = session.CurrentExercise.ResultadoCorrecto + 1;
-            session.SubmitAnswer(respuesta);
+            var ejercicioAntes = session.CurrentExercise;
 
+            session.SubmitAnswer(-1); // Respuesta incorrecta
+
+            var ejercicioDespues = session.CurrentExercise;
+
+            Assert.AreEqual(0, session.CorrectAnswers);
+            Assert.AreEqual(ejercicioAntes.Multiplicando1, ejercicioDespues.Multiplicando1);
+            Assert.AreEqual(ejercicioAntes.Multiplicando2, ejercicioDespues.Multiplicando2);
+        }
+
+        [Test]
+        public void SubmitAnswer_Incorrecta_NoCambiaElEjercicio()
+        {
+            var session = new GameSession(3);
+            var ejercicioAntes = session.CurrentExercise;
+
+            int respuestaIncorrecta = ejercicioAntes.ResultadoCorrecto + 1;
+            session.SubmitAnswer(respuestaIncorrecta);
+
+            var ejercicioDespues = session.CurrentExercise;
+
+            Assert.AreEqual(ejercicioAntes.Multiplicando1, ejercicioDespues.Multiplicando1);
+            Assert.AreEqual(ejercicioAntes.Multiplicando2, ejercicioDespues.Multiplicando2);
             Assert.AreEqual(0, session.CorrectAnswers);
         }
 
