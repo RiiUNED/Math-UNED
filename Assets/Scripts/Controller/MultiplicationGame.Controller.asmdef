@@ -1,0 +1,15 @@
+{
+  "name": "MultiplicationGame.Controller",
+  "references": [
+    "MultiplicationGame.Model"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

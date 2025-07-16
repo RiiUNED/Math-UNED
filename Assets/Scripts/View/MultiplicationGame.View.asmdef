@@ -1,0 +1,11 @@
+{
+  "name": "MultiplicationGame.View",
+  "references": [
+    "MultiplicationGame.Controller",
+    "UnityEngine.UI",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "autoReferenced": true
+}

@@ -1,0 +1,20 @@
+{
+  "name": "Test.Controller",
+  "references": [
+    "UnityEngine.TestRunner",
+    "nunit.framework",
+    "MultiplicationGame.Controller",
+    "MultiplicationGame.Model"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

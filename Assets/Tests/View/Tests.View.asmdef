@@ -1,0 +1,13 @@
+{
+  "name": "Tests.View",
+  "references": [
+    "nunit.framework",
+    "UnityEngine.TestRunner",
+    "MultiplicationGame.View",
+    "MultiplicationGame.Controller",
+    "MultiplicationGame.Model",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [ "Editor" ],
+  "autoReferenced": true
+}
