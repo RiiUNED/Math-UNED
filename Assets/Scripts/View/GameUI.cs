@@ -15,8 +15,8 @@ namespace MultiplicationGame.View
         public GameObject panelResultado;
         public TextMeshProUGUI resultadoFinalText;
         public Button botonEnviar;
-        public Button botonIniciar;
         public Button botonSkip;
+        public TextMeshProUGUI botonSkipText;
 
         [Header("Progreso de aciertos")]
         public Image[] puntosAcierto;
@@ -36,24 +36,28 @@ namespace MultiplicationGame.View
             controlador.OnPreguntaCambiada += ActualizarPregunta;
             controlador.OnJuegoFinalizado += MostrarResultadoFinal;
             controlador.OnAciertoRegistrado += MarcarAcierto;
+            controlador.OnSkipsAgotados += DeshabilitarBotonSkip;
 
-            botonEnviar.onClick.AddListener(EnviarRespuesta);
-            botonIniciar.onClick.AddListener(IniciarJuego);
+            // Limpiar cualquier listener anterior para evitar duplicados
+            botonEnviar.onClick.RemoveAllListeners();
+            botonSkip.onClick.RemoveAllListeners();
+
+            // Registrar eventos solo una vez
+            botonEnviar.onClick.AddListener(EnviarRespuesta);   
             botonSkip.onClick.AddListener(SaltarPregunta);
-
-            if (botonSkip != null)
-                botonSkip.onClick.AddListener(SaltarPregunta);
-
         }
 
-        private void IniciarJuego()
+        public void SeleccionarTabla(int tabla)
         {
+            bool usarAleatoria = (tabla == 0);
+            int tablaSeleccionada = usarAleatoria ? 1 : tabla;
+
+            controlador.IniciarJuego(tablaSeleccionada, usarAleatoria);
+
             panelInicio.SetActive(false);
             panelJuego.SetActive(true);
-
-            // Iniciar con tabla aleatoria (modo prueba)
-            controlador.IniciarJuego(0, tablaAleatoria: true);
         }
+
 
         private void EnviarRespuesta()
         {
@@ -65,9 +69,12 @@ namespace MultiplicationGame.View
             }
         }
 
+
         public void SaltarPregunta()
         {
+            controlador.RegistrarSkip();
             controlador.SaltarEjercicio();
+            ActualizarTextoBotonSkip();
         }
 
         public void ActualizarPregunta(string texto)
@@ -104,5 +111,23 @@ namespace MultiplicationGame.View
                 inputField.caretPosition = inputField.text.Length;
             }
         }
+        public void ActualizarTextoBotonSkip()
+        {
+            if (botonSkipText != null && !string.IsNullOrEmpty(botonSkipText.text))
+            {
+                botonSkipText.text = botonSkipText.text.Substring(0, botonSkipText.text.Length - 1);
+            }
+        }
+
+        public void DeshabilitarBotonSkip()
+        {
+            if (botonSkip != null)
+            {
+                botonSkip.interactable = false;
+            }
+        }
+
+
+
     }
 }

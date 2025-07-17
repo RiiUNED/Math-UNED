@@ -35,7 +35,6 @@ namespace Tests.View
             _ui.panelResultado = new GameObject();
             _ui.resultadoFinalText = new GameObject().AddComponent<TextMeshProUGUI>();
             _ui.botonEnviar = new GameObject().AddComponent<Button>();
-            _ui.botonIniciar = new GameObject().AddComponent<Button>();
 
             _ui.puntosAcierto = new Image[10];
             for (int i = 0; i < _ui.puntosAcierto.Length; i++)

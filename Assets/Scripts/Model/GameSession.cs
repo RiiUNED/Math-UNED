@@ -4,6 +4,7 @@ namespace MultiplicationGame.Model
 {
     public class GameSession
     {
+        public int MaxSkips { get; } = 3;
         public int Table { get; private set; }
         public bool TablaAleatoria { get; private set; }
         public int CorrectAnswers { get; private set; }

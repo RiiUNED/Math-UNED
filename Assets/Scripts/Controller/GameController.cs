@@ -6,14 +6,18 @@ namespace MultiplicationGame.Controller
     public class GameController
     {
         private GameSession _session;
+        private int contadorSkips = 0; // ← contador agregado
 
         public event Action<string> OnPreguntaCambiada;
         public event Action OnJuegoFinalizado;
         public event Action<int> OnAciertoRegistrado;
+        public event Action OnSkipsAgotados;
+
 
         public void IniciarJuego(int tabla, bool tablaAleatoria = false)
         {
             _session = new GameSession(tabla, tablaAleatoria);
+            contadorSkips = 0; // ← reinicia el contador al iniciar juego
             EmitirPregunta();
         }
 
@@ -51,6 +55,16 @@ namespace MultiplicationGame.Controller
             _session.ForzarNuevoEjercicio();
             EmitirPregunta();
         }
+        public void RegistrarSkip()
+        {
+            contadorSkips++;
+
+            if (_session != null && contadorSkips >= _session.MaxSkips)
+            {
+                OnSkipsAgotados?.Invoke();
+            }
+        }
+
 
         private void EmitirPregunta()
         {
@@ -62,6 +76,11 @@ namespace MultiplicationGame.Controller
         public int ObtenerAciertos()
         {
             return _session?.CorrectAnswers ?? 0;
+        }
+
+        public int ObtenerCantidadSkips() // ← método opcional para consultar el contador
+        {
+            return contadorSkips;
         }
     }
 }
