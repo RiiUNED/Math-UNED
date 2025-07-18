@@ -21,6 +21,8 @@ namespace MultiplicationGame.View
         [Header("Progreso de aciertos")]
         public Image[] puntosAcierto;
         public Color colorAcierto = Color.green;
+        [SerializeField] private Color colorInicialAcierto = new Color32(255, 0, 0, 255); // #FF0000
+
 
         private GameController controlador;
 
@@ -43,12 +45,14 @@ namespace MultiplicationGame.View
             botonSkip.onClick.RemoveAllListeners();
 
             // Registrar eventos solo una vez
-            botonEnviar.onClick.AddListener(EnviarRespuesta);   
+            botonEnviar.onClick.AddListener(EnviarRespuesta);
             botonSkip.onClick.AddListener(SaltarPregunta);
         }
 
         public void SeleccionarTabla(int tabla)
         {
+            ResetearVista(); // ← limpia la vista antes de empezar
+
             bool usarAleatoria = (tabla == 0);
             int tablaSeleccionada = usarAleatoria ? 1 : tabla;
 
@@ -57,7 +61,6 @@ namespace MultiplicationGame.View
             panelInicio.SetActive(false);
             panelJuego.SetActive(true);
         }
-
 
         private void EnviarRespuesta()
         {
@@ -68,7 +71,6 @@ namespace MultiplicationGame.View
                 inputField.ActivateInputField();
             }
         }
-
 
         public void SaltarPregunta()
         {
@@ -111,6 +113,7 @@ namespace MultiplicationGame.View
                 inputField.caretPosition = inputField.text.Length;
             }
         }
+
         public void ActualizarTextoBotonSkip()
         {
             if (botonSkipText != null && !string.IsNullOrEmpty(botonSkipText.text))
@@ -127,7 +130,47 @@ namespace MultiplicationGame.View
             }
         }
 
+        public void SalirDelJuego()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false; // Detener en editor
+#else
+            Application.Quit(); // Salir en compilado
+#endif
+        }
 
+        public void VolverAlMenuInicio()
+        {
+            panelResultado.SetActive(false);
+            panelInicio.SetActive(true);
+            ResetearVista(); // ← reinicia la vista
+        }
 
+        private void ResetearVista()
+        {
+            // Limpiar input
+            inputField.text = "";
+
+            // Restaurar aciertos a color inicial
+            foreach (var punto in puntosAcierto)
+            {
+                punto.color = colorInicialAcierto;
+            }
+
+            // Restaurar texto del botón Skip
+            if (botonSkipText != null)
+            {
+                botonSkipText.text = ">>\n...";
+            }
+
+            // Habilitar botón Skip
+            if (botonSkip != null)
+            {
+                botonSkip.interactable = true;
+            }
+
+            // Limpiar pregunta visible
+            preguntaText.text = "";
+        }
     }
 }

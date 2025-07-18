@@ -29,5 +29,20 @@ namespace MultiplicationGame.Model
         {
             return $"¿Cuánto es {Multiplicando1} × {Multiplicando2}?";
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is not MultiplicationExercise otro)
+                return false;
+
+            return Multiplicando1 == otro.Multiplicando1 &&
+                   Multiplicando2 == otro.Multiplicando2;
+        }
+
+        public override int GetHashCode()
+        {
+            return Multiplicando1 * 31 + Multiplicando2;
+        }
+
     }
 }

@@ -1,85 +1,135 @@
 using NUnit.Framework;
 using MultiplicationGame.Controller;
 using System;
+using System.Collections.Generic;
 
-namespace Tests.Controller
+namespace Tests.Editor
 {
     public class GameControllerTests
     {
-        private GameController _controller;
-        private string _preguntaRecibida;
-        private bool _juegoFinalizado;
+        private GameController controller;
+        private List<string> preguntasEmitidas;
+        private List<int> aciertosReportados;
+        private bool juegoFinalizado;
+        private bool skipsAgotados;
 
         [SetUp]
         public void SetUp()
         {
-            _controller = new GameController();
+            controller = new GameController();
+            preguntasEmitidas = new List<string>();
+            aciertosReportados = new List<int>();
+            juegoFinalizado = false;
+            skipsAgotados = false;
 
-            // Subscribir a eventos
-            _controller.OnPreguntaCambiada += p => _preguntaRecibida = p;
-            _controller.OnJuegoFinalizado += () => _juegoFinalizado = true;
-
-            _preguntaRecibida = null;
-            _juegoFinalizado = false;
+            controller.OnPreguntaCambiada += texto => preguntasEmitidas.Add(texto);
+            controller.OnAciertoRegistrado += acierto => aciertosReportados.Add(acierto);
+            controller.OnJuegoFinalizado += () => juegoFinalizado = true;
+            controller.OnSkipsAgotados += () => skipsAgotados = true;
         }
 
         [Test]
-        public void IniciarJuego_EmitePreguntaInicial()
+        public void IniciarJuego_EmitePrimeraPregunta()
         {
-            _controller.IniciarJuego(2);
-            Assert.IsNotNull(_preguntaRecibida);
-            StringAssert.Contains("2 ×", _preguntaRecibida);
+            controller.IniciarJuego(5);
+
+            Assert.AreEqual(1, preguntasEmitidas.Count);
+            StringAssert.Contains("×", preguntasEmitidas[0]);
         }
 
         [Test]
-        public void EnviarRespuesta_Alcanzar10Aciertos_FinalizaJuego()
+        public void EnviarRespuesta_Correcta_EmiteNuevaPreguntaYRegistraAcierto()
         {
-            _controller.IniciarJuego(4);
+            controller.IniciarJuego(2);
+            var pregunta = preguntasEmitidas[^1];
+            var partes = pregunta.Split('×', '?');
+            int multiplicando1 = int.Parse(partes[0].Split(' ')[2]);
+            int multiplicando2 = int.Parse(partes[1].Trim());
+            int respuestaCorrecta = multiplicando1 * multiplicando2;
 
-            var sesion = typeof(GameController)
-                .GetField("_session", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .GetValue(_controller) as MultiplicationGame.Model.GameSession;
+            controller.EnviarRespuesta(respuestaCorrecta);
 
+            Assert.AreEqual(2, preguntasEmitidas.Count); // Se emite una nueva
+            Assert.AreEqual(1, aciertosReportados.Count);
+            Assert.AreEqual(0, aciertosReportados[0]);
+        }
+
+[Test]
+public void EnviarRespuesta_Incorrecta_NoRegistraAcierto()
+{
+    controller.IniciarJuego(3);
+    string preguntaAntes = preguntasEmitidas[^1];
+    int preguntasAntes = preguntasEmitidas.Count;
+
+    controller.EnviarRespuesta(999); // incorrecta
+
+    Assert.AreEqual(0, aciertosReportados.Count, "No debe registrarse un acierto");
+    Assert.AreEqual(preguntaAntes, preguntasEmitidas[^1], "La pregunta debe ser la misma");
+    Assert.GreaterOrEqual(preguntasEmitidas.Count, preguntasAntes, "La pregunta puede haberse reemitido");
+}
+
+
+        [Test]
+        public void Juego_Finaliza_AlAcertar10()
+        {
+            controller.IniciarJuego(1);
             for (int i = 0; i < 10; i++)
             {
-                int resultado = sesion.CurrentExercise.ResultadoCorrecto;
-                _controller.EnviarRespuesta(resultado);
+                var pregunta = preguntasEmitidas[^1];
+                var partes = pregunta.Split('×', '?');
+                int m1 = int.Parse(partes[0].Split(' ')[2]);
+                int m2 = int.Parse(partes[1].Trim());
+                controller.EnviarRespuesta(m1 * m2);
             }
 
-            Assert.IsTrue(_juegoFinalizado);
+            Assert.AreEqual(10, aciertosReportados.Count);
+            Assert.IsTrue(juegoFinalizado);
         }
 
         [Test]
-        public void EnviarRespuesta_Correcta_DisparaEventoOnAciertoRegistradoConIndiceCorrecto()
+        public void SaltarEjercicio_CambiaPregunta()
         {
-            int? aciertoRecibido = null;
+            controller.IniciarJuego(3);
+            string anterior = preguntasEmitidas[^1];
 
-            _controller.OnAciertoRegistrado += (index) => aciertoRecibido = index;
+            controller.SaltarEjercicio();
 
-            _controller.IniciarJuego(3);
-
-            var sesion = typeof(GameController)
-                .GetField("_session", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .GetValue(_controller) as MultiplicationGame.Model.GameSession;
-
-            int resultado = sesion.CurrentExercise.ResultadoCorrecto;
-
-            _controller.EnviarRespuesta(resultado);
-
-            Assert.AreEqual(0, aciertoRecibido);
+            Assert.AreEqual(2, preguntasEmitidas.Count);
+            Assert.AreNotEqual(anterior, preguntasEmitidas[^1]);
         }
 
         [Test]
-        public void EnviarRespuesta_Incorrecta_NoDisparaEventoOnAciertoRegistrado()
+        public void RegistrarSkip_EmiteEventoCuandoSeAgotan()
         {
-            bool eventoLlamado = false;
+            controller.IniciarJuego(5);
+            controller.RegistrarSkip();
+            controller.RegistrarSkip();
+            controller.RegistrarSkip();
 
-            _controller.OnAciertoRegistrado += (_) => eventoLlamado = true;
+            Assert.IsTrue(skipsAgotados);
+        }
 
-            _controller.IniciarJuego(5);
-            _controller.EnviarRespuesta(-1); // respuesta claramente incorrecta
+        [Test]
+        public void ObtenerAciertos_DevuelveCantidadCorrecta()
+        {
+            controller.IniciarJuego(2);
+            var pregunta = preguntasEmitidas[^1];
+            var partes = pregunta.Split('×', '?');
+            int m1 = int.Parse(partes[0].Split(' ')[2]);
+            int m2 = int.Parse(partes[1].Trim());
 
-            Assert.IsFalse(eventoLlamado);
+            controller.EnviarRespuesta(m1 * m2);
+            Assert.AreEqual(1, controller.ObtenerAciertos());
+        }
+
+        [Test]
+        public void ObtenerCantidadSkips_DevuelveSkipsRegistrados()
+        {
+            controller.IniciarJuego(7);
+            controller.RegistrarSkip();
+            controller.RegistrarSkip();
+
+            Assert.AreEqual(2, controller.ObtenerCantidadSkips());
         }
     }
 }

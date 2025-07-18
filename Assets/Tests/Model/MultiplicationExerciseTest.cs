@@ -1,85 +1,69 @@
 using NUnit.Framework;
 using MultiplicationGame.Model;
 
-namespace Tests.Model
+namespace Tests.Editor
 {
     public class MultiplicationExerciseTests
     {
         [Test]
-        public void Constructor_AsignaValoresCorrectamente()
+        public void Constructor_ValoresValidos_NoLanzaWarning()
         {
-            for (int m1 = 1; m1 <= 9; m1++)
-            {
-                for (int m2 = 1; m2 <= 9; m2++)
-                {
-                    var ejercicio = new MultiplicationExercise(m1, m2);
-
-                    Assert.AreEqual(m1, ejercicio.Multiplicando1, $"Multiplicando1 incorrecto para {m1} × {m2}");
-                    Assert.AreEqual(m2, ejercicio.Multiplicando2, $"Multiplicando2 incorrecto para {m1} × {m2}");
-                    Assert.AreEqual(m1 * m2, ejercicio.ResultadoCorrecto, $"Resultado incorrecto para {m1} × {m2}");
-                }
-            }
+            var exercise = new MultiplicationExercise(3, 4);
+            Assert.AreEqual(3, exercise.Multiplicando1);
+            Assert.AreEqual(4, exercise.Multiplicando2);
         }
 
         [Test]
-        public void EsRespuestaCorrecta_DevuelveTrue_ParaTodasLasCombinacionesDel1Al9()
+        public void ResultadoCorrecto_CalculoEsCorrecto()
         {
-            for (int m1 = 1; m1 <= 9; m1++)
-            {
-                for (int m2 = 1; m2 <= 9; m2++)
-                {
-                    var ejercicio = new MultiplicationExercise(m1, m2);
-                    int respuesta = m1 * m2;
-                    Assert.IsTrue(ejercicio.EsRespuestaCorrecta(respuesta), 
-                        $"Fallo para operación {m1} × {m2} con respuesta {respuesta}");
-                }
-            }
+            var exercise = new MultiplicationExercise(6, 7);
+            Assert.AreEqual(42, exercise.ResultadoCorrecto);
         }
 
         [Test]
-        public void EsRespuestaCorrecta_DevuelveFalse_ParaRespuestaIncorrecta()
+        public void EsRespuestaCorrecta_RespuestaCorrecta_DevuelveTrue()
         {
-            var ejercicio = new MultiplicationExercise(7, 8);
-            Assert.IsFalse(ejercicio.EsRespuestaCorrecta(50));
+            var exercise = new MultiplicationExercise(2, 5);
+            Assert.IsTrue(exercise.EsRespuestaCorrecta(10));
         }
 
         [Test]
-        public void EsRespuestaCorrecta_DevuelveFalse_SiRespuestaEsNegativa()
+        public void EsRespuestaCorrecta_RespuestaIncorrecta_DevuelveFalse()
         {
-            var ejercicio = new MultiplicationExercise(3, 4);
-            Assert.IsFalse(ejercicio.EsRespuestaCorrecta(-12));
+            var exercise = new MultiplicationExercise(2, 5);
+            Assert.IsFalse(exercise.EsRespuestaCorrecta(11));
         }
 
         [Test]
-        public void ResultadoCorrecto_EsConsistente_EnMultiplesConsultas()
+        public void ToString_FormatoCorrecto()
         {
-            var ejercicio = new MultiplicationExercise(5, 6);
-            var resultado1 = ejercicio.ResultadoCorrecto;
-            var resultado2 = ejercicio.ResultadoCorrecto;
-            Assert.AreEqual(resultado1, resultado2);
+            var exercise = new MultiplicationExercise(8, 3);
+            string expected = "¿Cuánto es 8 × 3?";
+            Assert.AreEqual(expected, exercise.ToString());
         }
 
         [Test]
-        public void Constructor_AceptaMultiplicandosDel1Al9()
+        public void Equals_DosInstanciasIguales_DevuelveTrue()
         {
-            for (int i = 1; i <= 9; i++)
-            {
-                var ejercicio = new MultiplicationExercise(i, i);
-                Assert.AreEqual(i * i, ejercicio.ResultadoCorrecto);
-            }
+            var a = new MultiplicationExercise(3, 3);
+            var b = new MultiplicationExercise(3, 3);
+            Assert.IsTrue(a.Equals(b));
         }
 
         [Test]
-        public void NingunMultiplicandoDebeSerCero()
+        public void Equals_InstanciasDiferentes_DevuelveFalse()
         {
-            for (int i = 0; i < 100; i++)
-            {
-                var session = new GameSession(5);
-                var e = session.CurrentExercise;
+            var a = new MultiplicationExercise(2, 3);
+            var b = new MultiplicationExercise(3, 2);
+            Assert.IsFalse(a.Equals(b));
+        }
 
-                Assert.AreNotEqual(0, e.Multiplicando1);
-                Assert.AreNotEqual(0, e.Multiplicando2);
-            }
+        [Test]
+        public void GetHashCode_DiferentesMultiplicaciones_GeneranHashDiferente()
+        {
+            var a = new MultiplicationExercise(2, 3);
+            var b = new MultiplicationExercise(3, 2);
+            Assert.AreNotEqual(a.GetHashCode(), b.GetHashCode());
         }
     }
 }

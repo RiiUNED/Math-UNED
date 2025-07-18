@@ -28,9 +28,11 @@ namespace MultiplicationGame.Model
 
             if (CurrentExercise.EsRespuestaCorrecta(answer))
             {
+                bool estabaFinalizadoAntes = IsFinished; // ← capturás antes del incremento
+
                 CorrectAnswers++;
 
-                if (!IsFinished)
+                if (!estabaFinalizadoAntes)
                     GenerateNewExercise();
             }
 
@@ -45,11 +47,19 @@ namespace MultiplicationGame.Model
 
         private void GenerateNewExercise()
         {
-            int multiplicador = TablaAleatoria ? rnd.Next(1, 10) : Table;
-            int multiplicando = rnd.Next(1, 10); // ambos del 1 al 9
+            MultiplicationExercise nuevoEjercicio;
+            do
+            {
+                int multiplicador = TablaAleatoria ? rnd.Next(1, 10) : Table;
+                int multiplicando = rnd.Next(1, 10);
 
-            CurrentExercise = new MultiplicationExercise(multiplicador, multiplicando);
+                nuevoEjercicio = new MultiplicationExercise(multiplicador, multiplicando);
+            }
+            while (CurrentExercise != null && CurrentExercise.Equals(nuevoEjercicio));
+
+            CurrentExercise = nuevoEjercicio;
         }
+
 
         public bool IsFinished => CorrectAnswers >= 10;
     }
