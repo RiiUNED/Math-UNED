@@ -81,6 +81,7 @@ namespace MultiplicationGame.View
 
         public void ActualizarPregunta(string texto)
         {
+            Debug.Log("Recibida nueva pregunta: " + texto);
             preguntaText.text = texto;
         }
 

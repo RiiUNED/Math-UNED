@@ -54,19 +54,19 @@ namespace Tests.Editor
             Assert.AreEqual(0, aciertosReportados[0]);
         }
 
-[Test]
-public void EnviarRespuesta_Incorrecta_NoRegistraAcierto()
-{
-    controller.IniciarJuego(3);
-    string preguntaAntes = preguntasEmitidas[^1];
-    int preguntasAntes = preguntasEmitidas.Count;
+        [Test]
+        public void EnviarRespuesta_Incorrecta_NoRegistraAcierto()
+        {
+            controller.IniciarJuego(3);
+            string preguntaAntes = preguntasEmitidas[^1];
+            int preguntasAntes = preguntasEmitidas.Count;
 
-    controller.EnviarRespuesta(999); // incorrecta
+            controller.EnviarRespuesta(999); // incorrecta
 
-    Assert.AreEqual(0, aciertosReportados.Count, "No debe registrarse un acierto");
-    Assert.AreEqual(preguntaAntes, preguntasEmitidas[^1], "La pregunta debe ser la misma");
-    Assert.GreaterOrEqual(preguntasEmitidas.Count, preguntasAntes, "La pregunta puede haberse reemitido");
-}
+            Assert.AreEqual(0, aciertosReportados.Count, "No debe registrarse un acierto");
+            Assert.AreEqual(preguntaAntes, preguntasEmitidas[^1], "La pregunta debe ser la misma");
+            Assert.GreaterOrEqual(preguntasEmitidas.Count, preguntasAntes, "La pregunta puede haberse reemitido");
+        }
 
 
         [Test]
