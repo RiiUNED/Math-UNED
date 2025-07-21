@@ -5,21 +5,33 @@ namespace MultiplicationGame.View
 {
     public class ResultadoUI : MonoBehaviour
     {
-        public GameObject panelResultado;
-        public GameObject panelInicio;
-        public TextMeshProUGUI resultadoFinalText;
+        [SerializeField] private TextMeshProUGUI resultadoFinalText;
+        [SerializeField] private UIManager uiManager;
 
         public void MostrarResultado()
         {
-            panelResultado.SetActive(true);
-            panelInicio.SetActive(false);
-            resultadoFinalText.text = $"¡Fin del juego!\n¡Bien hecho!";
+            if (resultadoFinalText != null)
+            {
+                resultadoFinalText.text = "¡Has completado el juego!\n¡Bien hecho!";
+            }
         }
 
-        public void VolverAlMenu()
+        public void Salir()
         {
-            panelResultado.SetActive(false);
-            panelInicio.SetActive(true);
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+    Application.Quit();
+#endif
+        }
+
+
+        public void Continuar()
+        {
+            if (uiManager != null)
+            {
+                uiManager.MostrarPanelSeleccionModo();
+            }
         }
     }
 }

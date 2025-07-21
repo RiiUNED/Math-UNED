@@ -13,6 +13,8 @@ namespace MultiplicationGame.View
         public Button botonEnviar;
         public Button botonSkip;
         public TextMeshProUGUI botonSkipText;
+        [SerializeField] private UIManager uiManager;
+
 
         [Header("Progreso de aciertos")]
         public Image[] puntosAcierto;
@@ -104,9 +106,13 @@ namespace MultiplicationGame.View
 
         private void FinalizarJuego()
         {
-            gameObject.SetActive(false); // Oculta el panel
-            // Aquí puedes notificar a otro script que muestre el panel de resultado
+            gameObject.SetActive(false);
+            if (uiManager != null)
+            {
+                uiManager.MostrarPanelResultado();
+            }
         }
+
 
         private void ResetearVista()
         {
