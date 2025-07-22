@@ -22,7 +22,7 @@ namespace MultiplicationGame.View
 
         private void SeleccionarMultijugador()
         {
-            uiManager.MostrarPanelMultijugador();
+            uiManager.IniciarModoMultijugador();
         }
     }
 }

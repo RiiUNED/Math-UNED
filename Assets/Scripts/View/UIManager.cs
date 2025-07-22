@@ -10,18 +10,17 @@ namespace MultiplicationGame.View
         private GameObject panelJuego;
         private GameObject panelMultijugador;
         private GameObject panelResultado;
-        private GameController controlador;
 
+        private PlayerGameController controlador;
+        private TurnManagerController controladorMultijugador;
 
         private void Awake()
         {
-            // Busca los paneles por nombre dentro del Canvas
             panelSeleccionModo = transform.Find("PanelSeleccionModo")?.gameObject;
             panel1Jugador = transform.Find("Panel1Jugador")?.gameObject;
-            panelJuego = transform.Find("PanelJuego")?.gameObject;
-            panelMultijugador = transform.Find("PanelMultijugador")?.gameObject;
+            panelJuego = transform.Find("PanelJuego1")?.gameObject;
+            panelMultijugador = transform.Find("PanelJuegoMultijugador")?.gameObject;
             panelResultado = transform.Find("PanelResultado")?.gameObject;
-
 
             if (!panelSeleccionModo || !panel1Jugador || !panelMultijugador || !panelResultado)
             {
@@ -33,7 +32,7 @@ namespace MultiplicationGame.View
 
         public void IniciarJuegoConTabla(int tabla)
         {
-            controlador = new GameController();
+            controlador = new PlayerGameController();
 
             bool aleatoria = (tabla == 0);
             int tablaFinal = aleatoria ? 1 : tabla;
@@ -41,6 +40,21 @@ namespace MultiplicationGame.View
             panelJuego.GetComponent<JuegoUI>().IniciarJuego(controlador, tablaFinal, aleatoria);
 
             MostrarPanelJuego();
+        }
+
+        public void IniciarModoMultijugador()
+        {
+            controladorMultijugador = new TurnManagerController();
+
+            var (jugador1, jugador2) = controladorMultijugador.IniciarJuegoMultijugador();
+
+            var panelUI = panelMultijugador.GetComponent<PanelJuegoMultijugador>();
+            if (panelUI != null)
+            {
+                panelUI.ConectarControlador(controladorMultijugador, jugador1, jugador2);
+            }
+
+            MostrarPanelMultijugador();
         }
 
         public void MostrarPanelSeleccionModo()
@@ -54,12 +68,12 @@ namespace MultiplicationGame.View
             OcultarTodosLosPaneles();
             if (panel1Jugador != null) panel1Jugador.SetActive(true);
         }
+
         public void MostrarPanelJuego()
         {
             OcultarTodosLosPaneles();
             if (panelJuego != null) panelJuego.SetActive(true);
         }
-
 
         public void MostrarPanelMultijugador()
         {
@@ -70,7 +84,6 @@ namespace MultiplicationGame.View
         public void MostrarPanelResultado()
         {
             OcultarTodosLosPaneles();
-
             if (panelResultado == null) return;
 
             panelResultado.SetActive(true);
@@ -80,7 +93,6 @@ namespace MultiplicationGame.View
 
             resultadoUI.MostrarResultado();
         }
-
 
         private void OcultarTodosLosPaneles()
         {

@@ -2,7 +2,7 @@ using System;
 
 namespace MultiplicationGame.Model
 {
-    public class GameSession
+    public class PlayerSession
     {
         public int MaxSkips { get; } = 3;
         public int Table { get; private set; }
@@ -12,7 +12,7 @@ namespace MultiplicationGame.Model
 
         private Random rnd;
 
-        public GameSession(int table, bool tablaAleatoria = false)
+        public PlayerSession(int table, bool tablaAleatoria = false)
         {
             Table = table;
             TablaAleatoria = tablaAleatoria;

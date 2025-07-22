@@ -24,7 +24,7 @@ namespace MultiplicationGame.View
         [SerializeField] private Color colorInicialAcierto = new Color32(255, 0, 0, 255); // #FF0000
 
 
-        private GameController controlador;
+        private PlayerGameController controlador;
 
         private void Start()
         {
@@ -33,7 +33,7 @@ namespace MultiplicationGame.View
 
         public void Inicializar()
         {
-            controlador = new GameController();
+            controlador = new PlayerGameController();
 
             controlador.OnPreguntaCambiada += ActualizarPregunta;
             controlador.OnJuegoFinalizado += MostrarResultadoFinal;

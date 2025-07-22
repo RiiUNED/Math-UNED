@@ -7,7 +7,7 @@ namespace Tests.Editor
 {
     public class GameControllerTests
     {
-        private GameController controller;
+        private PlayerGameController controller;
         private List<string> preguntasEmitidas;
         private List<int> aciertosReportados;
         private bool juegoFinalizado;
@@ -16,7 +16,7 @@ namespace Tests.Editor
         [SetUp]
         public void SetUp()
         {
-            controller = new GameController();
+            controller = new PlayerGameController();
             preguntasEmitidas = new List<string>();
             aciertosReportados = new List<int>();
             juegoFinalizado = false;

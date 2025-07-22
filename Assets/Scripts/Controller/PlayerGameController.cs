@@ -3,9 +3,9 @@ using MultiplicationGame.Model;
 
 namespace MultiplicationGame.Controller
 {
-    public class GameController
+    public class PlayerGameController
     {
-        private GameSession _session;
+        private PlayerSession _session;
         private int contadorSkips = 0; // ← contador agregado
 
         public event Action<string> OnPreguntaCambiada;
@@ -16,7 +16,7 @@ namespace MultiplicationGame.Controller
 
         public void IniciarJuego(int tabla, bool tablaAleatoria = false)
         {
-            _session = new GameSession(tabla, tablaAleatoria);
+            _session = new PlayerSession(tabla, tablaAleatoria);
             contadorSkips = 0; // ← reinicia el contador al iniciar juego
             EmitirPregunta();
         }
@@ -72,6 +72,15 @@ namespace MultiplicationGame.Controller
             string texto = $"¿Cuánto es {ejercicio.Multiplicando1} × {ejercicio.Multiplicando2}?";
             OnPreguntaCambiada?.Invoke(texto);
         }
+        public string ObtenerPreguntaActual()
+        {
+            if (_session == null || _session.IsFinished)
+                return "";
+
+            var ejercicio = _session.CurrentExercise;
+            return $"¿Cuánto es {ejercicio.Multiplicando1} × {ejercicio.Multiplicando2}?";
+        }
+
 
         public int ObtenerAciertos()
         {
@@ -82,5 +91,11 @@ namespace MultiplicationGame.Controller
         {
             return contadorSkips;
         }
+
+        public bool PuedeSaltar()
+        {
+            return _session != null && contadorSkips < _session.MaxSkips;
+        }
+
     }
 }

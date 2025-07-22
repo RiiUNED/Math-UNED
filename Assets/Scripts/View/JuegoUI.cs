@@ -21,7 +21,7 @@ namespace MultiplicationGame.View
         public Color colorAcierto = Color.green;
         [SerializeField] private Color colorInicialAcierto = new Color32(255, 0, 0, 255);
 
-        private GameController controlador;
+        private PlayerGameController controlador;
 
         private void Start()
         {
@@ -29,7 +29,7 @@ namespace MultiplicationGame.View
             botonSkip.onClick.AddListener(SaltarPregunta);
         }
 
-        public void IniciarJuego(GameController controladorRecibido, int tabla, bool aleatoria)
+        public void IniciarJuego(PlayerGameController controladorRecibido, int tabla, bool aleatoria)
         {
             controlador = controladorRecibido;
 
@@ -130,5 +130,26 @@ namespace MultiplicationGame.View
             if (botonSkip != null)
                 botonSkip.interactable = true;
         }
+        private void ActualizarProgreso(int cantidad)
+        {
+            for (int i = 0; i < puntosAcierto.Length; i++)
+            {
+                puntosAcierto[i].color = (i < cantidad) ? colorAcierto : colorInicialAcierto;
+            }
+        }
+
+        private void ActualizarBotonSkip(bool activo)
+        {
+            if (botonSkip != null)
+                botonSkip.interactable = activo;
+        }
+
+        public void Actualizar(string pregunta, int aciertos, bool puedeSaltar)
+        {
+            ActualizarPregunta(pregunta);
+            ActualizarProgreso(aciertos);
+            ActualizarBotonSkip(puedeSaltar);
+        }
+
     }
 }

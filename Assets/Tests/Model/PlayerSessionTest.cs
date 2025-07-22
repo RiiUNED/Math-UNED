@@ -8,7 +8,7 @@ namespace Tests.Editor
         [Test]
         public void Constructor_InicializaCorrectamenteConTablaFija()
         {
-            var session = new GameSession(3);
+            var session = new PlayerSession(3);
 
             Assert.AreEqual(3, session.Table);
             Assert.IsFalse(session.TablaAleatoria);
@@ -20,7 +20,7 @@ namespace Tests.Editor
         [Test]
         public void Constructor_InicializaCorrectamenteConTablaAleatoria()
         {
-            var session = new GameSession(3, true);
+            var session = new PlayerSession(3, true);
 
             Assert.IsTrue(session.TablaAleatoria);
             Assert.IsNotNull(session.CurrentExercise);
@@ -31,7 +31,7 @@ namespace Tests.Editor
         [Test]
         public void SubmitAnswer_RespuestaIncorrecta_NoIncrementaCorrectAnswers()
         {
-            var session = new GameSession(3, false);
+            var session = new PlayerSession(3, false);
             int respuestaIncorrecta = session.CurrentExercise.ResultadoCorrecto + 1;
 
             session.SubmitAnswer(respuestaIncorrecta);
@@ -43,7 +43,7 @@ namespace Tests.Editor
         [Test]
         public void SubmitAnswer_RespuestaCorrecta_IncrementaCorrectAnswers()
         {
-            var session = new GameSession(2, false);
+            var session = new PlayerSession(2, false);
             int respuesta = session.CurrentExercise.ResultadoCorrecto;
 
             var anterior = session.CurrentExercise;
@@ -56,7 +56,7 @@ namespace Tests.Editor
         [Test]
         public void SubmitAnswer_NoCambiaEjercicioSiYaFinalizado()
         {
-            var session = new GameSession(3);
+            var session = new PlayerSession(3);
             // Simular 10 respuestas correctas
             for (int i = 0; i < 10; i++)
                 session.SubmitAnswer(session.CurrentExercise.ResultadoCorrecto);
@@ -73,7 +73,7 @@ namespace Tests.Editor
         [Test]
         public void ForzarNuevoEjercicio_CambiaEjercicioSiNoFinalizado()
         {
-            var session = new GameSession(5);
+            var session = new PlayerSession(5);
             var anterior = session.CurrentExercise;
 
             session.ForzarNuevoEjercicio();
@@ -84,7 +84,7 @@ namespace Tests.Editor
         [Test]
         public void ForzarNuevoEjercicio_NoHaceNadaSiFinalizado()
         {
-            var session = new GameSession(4);
+            var session = new PlayerSession(4);
             for (int i = 0; i < 10; i++)
                 session.SubmitAnswer(session.CurrentExercise.ResultadoCorrecto);
 
