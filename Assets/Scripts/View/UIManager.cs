@@ -5,23 +5,19 @@ namespace MultiplicationGame.View
 {
     public class UIManager : MonoBehaviour
     {
-        private GameObject panelSeleccionModo;
-        private GameObject panel1Jugador;
-        private GameObject panelJuego;
-        private GameObject panelMultijugador;
-        private GameObject panelResultado;
+        [Header("Paneles del Juego")]
+        [SerializeField] private GameObject panelSeleccionModo;
+        [SerializeField] private GameObject panel1Jugador;
+        [SerializeField] private GameObject panelJuego;
+        [SerializeField] private GameObject panelMultijugador;
+        [SerializeField] private GameObject panelResultado;
+        [SerializeField] private GameObject panelResultadoMultijugador;
 
         private PlayerGameController controlador;
         private TurnManagerController controladorMultijugador;
 
         private void Awake()
         {
-            panelSeleccionModo = transform.Find("PanelSeleccionModo")?.gameObject;
-            panel1Jugador = transform.Find("Panel1Jugador")?.gameObject;
-            panelJuego = transform.Find("PanelJuego1")?.gameObject;
-            panelMultijugador = transform.Find("PanelJuegoMultijugador")?.gameObject;
-            panelResultado = transform.Find("PanelResultado")?.gameObject;
-
             if (!panelSeleccionModo || !panel1Jugador || !panelMultijugador || !panelResultado)
             {
                 Debug.LogWarning("Algunos paneles no se encontraron en el Canvas. Revisa nombres y jerarquía.");
@@ -94,12 +90,22 @@ namespace MultiplicationGame.View
             resultadoUI.MostrarResultado();
         }
 
+        public void MostrarPanelResultadoMultijugador(int ganador)
+        {
+            OcultarTodosLosPaneles();
+            if (panelResultadoMultijugador == null) return;
+
+            panelResultadoMultijugador.SetActive(true);
+
+        }
+
         private void OcultarTodosLosPaneles()
         {
             if (panelSeleccionModo != null) panelSeleccionModo.SetActive(false);
             if (panel1Jugador != null) panel1Jugador.SetActive(false);
             if (panelMultijugador != null) panelMultijugador.SetActive(false);
             if (panelResultado != null) panelResultado.SetActive(false);
+            if (panelResultadoMultijugador != null) panelResultadoMultijugador.SetActive(false);
         }
     }
 }
