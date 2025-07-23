@@ -74,8 +74,20 @@ namespace MultiplicationGame.View
         public void MostrarPanelMultijugador()
         {
             OcultarTodosLosPaneles();
-            if (panelMultijugador != null) panelMultijugador.SetActive(true);
+            panelMultijugador.SetActive(true);
+
+            // Asegurarse de que los hijos estén activos
+            var panelJuego = panelMultijugador.GetComponent<PanelJuegoMultijugador>();
+            if (panelJuego != null)
+            {
+                if (panelJuego.panelJugador1 != null)
+                    panelJuego.panelJugador1.gameObject.SetActive(true);
+
+                if (panelJuego.panelJugador2 != null)
+                    panelJuego.panelJugador2.gameObject.SetActive(true);
+            }
         }
+
 
         public void MostrarPanelResultado()
         {
@@ -96,7 +108,9 @@ namespace MultiplicationGame.View
             if (panelResultadoMultijugador == null) return;
 
             panelResultadoMultijugador.SetActive(true);
-
+            panelResultadoMultijugador
+                .GetComponent<ResultadoMultijugadorUI>()
+                .MostrarResultado(ganador);
         }
 
         private void OcultarTodosLosPaneles()

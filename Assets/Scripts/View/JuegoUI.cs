@@ -15,7 +15,7 @@ namespace MultiplicationGame.View
         public TextMeshProUGUI botonSkipText;
         public bool esMultijugador = false;
         [SerializeField] private UIManager uiManager;
-
+        [SerializeField] public TurnManagerController turnManager;
 
         [Header("Progreso de aciertos")]
         public Image[] puntosAcierto;
@@ -23,10 +23,14 @@ namespace MultiplicationGame.View
         [SerializeField] private Color colorInicialAcierto = new Color32(255, 0, 0, 255);
 
         private PlayerGameController controlador;
+        public int jugadorIndex; // 1 o 2, según el jugador
 
         public void IniciarJuego(PlayerGameController controladorRecibido, int tabla, bool aleatoria)
         {
             controlador = controladorRecibido;
+            jugadorIndex = tabla; // tabla se usa como ID del jugador en este caso
+
+            Debug.Log($"[JuegoUI {jugadorIndex}] INICIADO con controlador ID: {controlador.GetHashCode()}");
 
             controlador.OnPreguntaCambiada += ActualizarPregunta;
             controlador.OnJuegoFinalizado += FinalizarJuego;
@@ -37,21 +41,38 @@ namespace MultiplicationGame.View
             controlador.IniciarJuego(tabla, aleatoria);
         }
 
-
         public void EnviarRespuesta()
         {
             int respuesta = answerBox.GetCurrentAnswer();
+            Debug.Log($"[JuegoUI {jugadorIndex}] ENVÍA respuesta: {respuesta} usando controlador ID: {controlador.GetHashCode()}");
 
-            controlador.EnviarRespuesta(respuesta);
+            if (esMultijugador && turnManager != null)
+            {
+                turnManager.ProcesarRespuestaJugador(jugadorIndex, respuesta);
+            }
+            else
+            {
+                controlador.EnviarRespuesta(respuesta);
+            }
+
             answerBox.Clear();
             answerBox.EnableInput();
-            
         }
 
         public void SaltarPregunta()
         {
-            controlador.RegistrarSkip();
-            controlador.SaltarEjercicio();
+            Debug.Log($"[JuegoUI {jugadorIndex}] SALTA pregunta usando controlador ID: {controlador.GetHashCode()}");
+
+            if (esMultijugador && turnManager != null)
+            {
+                turnManager.ProcesarSkipJugador(jugadorIndex);
+            }
+            else
+            {
+                controlador.RegistrarSkip();
+                controlador.SaltarEjercicio();
+            }
+
             ActualizarTextoBotonSkip();
         }
 
@@ -86,13 +107,12 @@ namespace MultiplicationGame.View
 
         private void FinalizarJuego()
         {
-            gameObject.SetActive(false);
             if (!esMultijugador && uiManager != null)
             {
+                gameObject.SetActive(false);
                 uiManager.MostrarPanelResultado();
             }
         }
-
 
         private void ResetearVista()
         {
@@ -110,6 +130,7 @@ namespace MultiplicationGame.View
             if (botonSkip != null)
                 botonSkip.interactable = true;
         }
+
         private void ActualizarProgreso(int cantidad)
         {
             for (int i = 0; i < puntosAcierto.Length; i++)
@@ -126,10 +147,10 @@ namespace MultiplicationGame.View
 
         public void Actualizar(string pregunta, int aciertos, bool puedeSaltar)
         {
+            Debug.Log($"[JuegoUI {jugadorIndex}] ACTUALIZA vista: pregunta='{pregunta}', aciertos={aciertos}, puedeSaltar={puedeSaltar}");
             ActualizarPregunta(pregunta);
             ActualizarProgreso(aciertos);
             ActualizarBotonSkip(puedeSaltar);
         }
-
     }
 }

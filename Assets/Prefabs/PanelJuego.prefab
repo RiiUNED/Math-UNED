@@ -2057,6 +2057,7 @@ MonoBehaviour:
   - {fileID: 8464151227650255027}
   colorAcierto: {r: 0, g: 1, b: 0, a: 1}
   colorInicialAcierto: {r: 1, g: 0, b: 0, a: 1}
+  jugadorIndex: 0
 --- !u!1 &8885010567597584271
 GameObject:
   m_ObjectHideFlags: 0

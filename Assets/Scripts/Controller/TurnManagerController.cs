@@ -1,4 +1,6 @@
 using System;
+using UnityEngine; // Necesario para usar Debug.Log
+using MultiplicationGame.Controller;
 
 namespace MultiplicationGame.Controller
 {
@@ -13,7 +15,6 @@ namespace MultiplicationGame.Controller
         private bool juegoFinalizado = false;
         private int ganador = 0;
 
-
         /// <summary>
         /// Inicializa el juego para dos jugadores en modo aleatorio.
         /// Devuelve las instancias de cada controlador de jugador.
@@ -22,6 +23,9 @@ namespace MultiplicationGame.Controller
         {
             controller1 = new PlayerGameController();
             controller2 = new PlayerGameController();
+
+            Debug.Log($"[TurnManager] Controlador J1: {controller1.GetHashCode()}");
+            Debug.Log($"[TurnManager] Controlador J2: {controller2.GetHashCode()}");
 
             controller1.IniciarJuego(tabla: 1, tablaAleatoria: true);
             controller2.IniciarJuego(tabla: 1, tablaAleatoria: true);
@@ -35,8 +39,10 @@ namespace MultiplicationGame.Controller
         public void ProcesarRespuestaJugador(int jugadorIndex, int respuesta)
         {
             var controlador = ObtenerControlador(jugadorIndex);
-            controlador.EnviarRespuesta(respuesta);
 
+            Debug.Log($"[TurnManager] Jugador {jugadorIndex} responde: {respuesta} → usando controlador ID: {controlador.GetHashCode()}");
+
+            controlador.EnviarRespuesta(respuesta);
             EmitirEstadoJugador(jugadorIndex, controlador);
             VerificarFinDeJuego();
         }
@@ -44,6 +50,9 @@ namespace MultiplicationGame.Controller
         public void ProcesarSkipJugador(int jugadorIndex)
         {
             var controlador = ObtenerControlador(jugadorIndex);
+
+            Debug.Log($"[TurnManager] Jugador {jugadorIndex} SALTA → usando controlador ID: {controlador.GetHashCode()}");
+
             controlador.RegistrarSkip();
             controlador.SaltarEjercicio();
 
@@ -53,6 +62,8 @@ namespace MultiplicationGame.Controller
 
         private void EmitirEstadoJugador(int jugadorIndex, PlayerGameController ctrl)
         {
+            Debug.Log($"[TurnManager] Emitiendo estado J{jugadorIndex}: pregunta='{ctrl.ObtenerPreguntaActual()}', aciertos={ctrl.ObtenerAciertos()}, puedeSaltar={ctrl.PuedeSaltar()}");
+
             OnEstadoJugadorActualizado?.Invoke(
                 jugadorIndex,
                 ctrl.ObtenerPreguntaActual(),
@@ -66,26 +77,19 @@ namespace MultiplicationGame.Controller
             if (juegoFinalizado)
                 return;
 
-            // Registrar al primero que llega a 10 aciertos
-            if (ganador == 0)
+            if (controller1.ObtenerAciertos() >= 10)
             {
-                if (controller1.ObtenerAciertos() >= 10)
-                    ganador = 1;
-                else if (controller2.ObtenerAciertos() >= 10)
-                    ganador = 2;
+                ganador = 1;
+                juegoFinalizado = true;
+                OnJuegoFinalizado?.Invoke(ganador);
             }
-
-            // Verificar si ambos han terminado (ya no tienen pregunta actual)
-            bool jugador1Termino = controller1.ObtenerPreguntaActual() == "";
-            bool jugador2Termino = controller2.ObtenerPreguntaActual() == "";
-
-            if (jugador1Termino && jugador2Termino)
+            else if (controller2.ObtenerAciertos() >= 10)
             {
+                ganador = 2;
                 juegoFinalizado = true;
                 OnJuegoFinalizado?.Invoke(ganador);
             }
         }
-
 
         private PlayerGameController ObtenerControlador(int index)
         {
