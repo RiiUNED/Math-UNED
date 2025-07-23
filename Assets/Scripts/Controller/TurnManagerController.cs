@@ -8,9 +8,11 @@ namespace MultiplicationGame.Controller
         private PlayerGameController controller2;
 
         public event Action<int, string, int, bool> OnEstadoJugadorActualizado;
-        public event Action OnJuegoFinalizado;
+        public event Action<int> OnJuegoFinalizado; // int = índice del ganador (1 o 2)
 
         private bool juegoFinalizado = false;
+        private int ganador = 0;
+
 
         /// <summary>
         /// Inicializa el juego para dos jugadores en modo aleatorio.
@@ -61,14 +63,29 @@ namespace MultiplicationGame.Controller
 
         private void VerificarFinDeJuego()
         {
-            if (!juegoFinalizado &&
-                controller1.ObtenerPreguntaActual() == "" &&
-                controller2.ObtenerPreguntaActual() == "")
+            if (juegoFinalizado)
+                return;
+
+            // Registrar al primero que llega a 10 aciertos
+            if (ganador == 0)
+            {
+                if (controller1.ObtenerAciertos() >= 10)
+                    ganador = 1;
+                else if (controller2.ObtenerAciertos() >= 10)
+                    ganador = 2;
+            }
+
+            // Verificar si ambos han terminado (ya no tienen pregunta actual)
+            bool jugador1Termino = controller1.ObtenerPreguntaActual() == "";
+            bool jugador2Termino = controller2.ObtenerPreguntaActual() == "";
+
+            if (jugador1Termino && jugador2Termino)
             {
                 juegoFinalizado = true;
-                OnJuegoFinalizado?.Invoke();
+                OnJuegoFinalizado?.Invoke(ganador);
             }
         }
+
 
         private PlayerGameController ObtenerControlador(int index)
         {

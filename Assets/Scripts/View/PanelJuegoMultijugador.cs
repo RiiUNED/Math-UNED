@@ -13,6 +13,8 @@ namespace MultiplicationGame.View
 
         [Header("Controlador de Turnos")]
         public TurnManagerController turnManager;
+        [Header("Referencias UI")]
+        public UIManager uiManager;
 
         private void Start()
         {
@@ -32,10 +34,18 @@ namespace MultiplicationGame.View
             if (panelJugador2 != null)
                 panelJugador2.IniciarJuego(jugador2, 1, true);
 
+            ConfigurarModoMultijugador(); // <-- Llama aquí
+
             turnManager.OnEstadoJugadorActualizado += ActualizarEstadoJugador;
             turnManager.OnJuegoFinalizado += MostrarResultadoFinal;
         }
-
+        public void ConfigurarModoMultijugador()
+        {
+            if (panelJugador1 != null)
+                panelJugador1.esMultijugador = true;
+            if (panelJugador2 != null)
+                panelJugador2.esMultijugador = true;
+        }
 
         private void ActualizarEstadoJugador(int jugador, string pregunta, int aciertos, bool puedeSaltar)
         {
@@ -49,10 +59,15 @@ namespace MultiplicationGame.View
             }
         }
 
-        private void MostrarResultadoFinal()
+        private void MostrarResultadoFinal(int ganador)
         {
-            Debug.Log("El juego ha finalizado para ambos jugadores.");
-            // Aquí podrías notificar a UIManager si corresponde
+            if (panelJugador1 != null) panelJugador1.gameObject.SetActive(false);
+            if (panelJugador2 != null) panelJugador2.gameObject.SetActive(false);
+            // Notifica a UIManager para mostrar el panel de resultado multijugador
+            if (uiManager != null)
+            {
+                uiManager.MostrarPanelResultadoMultijugador(ganador);
+            }
         }
     }
 }

@@ -9,10 +9,11 @@ namespace MultiplicationGame.View
     {
         [Header("Referencias UI")]
         public TextMeshProUGUI preguntaText;
-        public TMP_InputField inputField;
+        public AnswerBox answerBox;
         public Button botonEnviar;
         public Button botonSkip;
         public TextMeshProUGUI botonSkipText;
+        public bool esMultijugador = false;
         [SerializeField] private UIManager uiManager;
 
 
@@ -22,12 +23,6 @@ namespace MultiplicationGame.View
         [SerializeField] private Color colorInicialAcierto = new Color32(255, 0, 0, 255);
 
         private PlayerGameController controlador;
-
-        private void Start()
-        {
-            botonEnviar.onClick.AddListener(EnviarRespuesta);
-            botonSkip.onClick.AddListener(SaltarPregunta);
-        }
 
         public void IniciarJuego(PlayerGameController controladorRecibido, int tabla, bool aleatoria)
         {
@@ -43,14 +38,14 @@ namespace MultiplicationGame.View
         }
 
 
-        private void EnviarRespuesta()
+        public void EnviarRespuesta()
         {
-            if (int.TryParse(inputField.text, out int respuesta))
-            {
-                controlador.EnviarRespuesta(respuesta);
-                inputField.text = "";
-                inputField.ActivateInputField();
-            }
+            int respuesta = answerBox.GetCurrentAnswer();
+
+            controlador.EnviarRespuesta(respuesta);
+            answerBox.Clear();
+            answerBox.EnableInput();
+            
         }
 
         public void SaltarPregunta()
@@ -63,21 +58,6 @@ namespace MultiplicationGame.View
         private void ActualizarPregunta(string texto)
         {
             preguntaText.text = texto;
-        }
-
-        public void AgregarDigito(string digito)
-        {
-            inputField.text += digito;
-            inputField.caretPosition = inputField.text.Length;
-        }
-
-        public void BorrarUltimoDigito()
-        {
-            if (!string.IsNullOrEmpty(inputField.text))
-            {
-                inputField.text = inputField.text.Substring(0, inputField.text.Length - 1);
-                inputField.caretPosition = inputField.text.Length;
-            }
         }
 
         private void ActualizarTextoBotonSkip()
@@ -107,7 +87,7 @@ namespace MultiplicationGame.View
         private void FinalizarJuego()
         {
             gameObject.SetActive(false);
-            if (uiManager != null)
+            if (!esMultijugador && uiManager != null)
             {
                 uiManager.MostrarPanelResultado();
             }
@@ -116,7 +96,7 @@ namespace MultiplicationGame.View
 
         private void ResetearVista()
         {
-            inputField.text = "";
+            answerBox.Clear();
             preguntaText.text = "";
 
             foreach (var punto in puntosAcierto)
