@@ -61,8 +61,6 @@ namespace MultiplicationGame.View
 
         public void SaltarPregunta()
         {
-            Debug.Log($"[JuegoUI {jugadorIndex}] SALTA pregunta usando controlador ID: {controlador.GetHashCode()}");
-
             if (esMultijugador && turnManager != null)
             {
                 turnManager.ProcesarSkipJugador(jugadorIndex);
