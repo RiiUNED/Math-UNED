@@ -1399,6 +1399,7 @@ MonoBehaviour:
   botonLocal: {fileID: 2106340326}
   botonOnline: {fileID: 367830436}
   uiManager: {fileID: 347581835}
+  servidorURL: http://localhost/Math-UNED.server/index.php
 --- !u!1 &347581830
 GameObject:
   m_ObjectHideFlags: 0

@@ -18,7 +18,7 @@ namespace MultiplicationGame.Controller
 
         public static void RegistrarSesionDesdeJson(string json)
         {
-            Debug.Log("📦 JSON recibido crudo:\n" + json);
+            //Debug.Log("📦 JSON recibido crudo:\n" + json);
             try
             {
                 DatosSesion datos = JsonUtility.FromJson<DatosSesion>(json);
@@ -26,7 +26,7 @@ namespace MultiplicationGame.Controller
             }
             catch
             {
-                Debug.LogError("❌ Error al deserializar la sesión.");
+                Debug.LogError("Error al deserializar la sesión.");
             }
         }
 
@@ -42,6 +42,11 @@ namespace MultiplicationGame.Controller
             {
                 Debug.LogWarning("⚠️ No hay sesión activa para mostrar.");
             }
+        }
+
+        public static bool SesionYaIniciada()
+        {
+            return SesionActual.datos != null;
         }
 
     }

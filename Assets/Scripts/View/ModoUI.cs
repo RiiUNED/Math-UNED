@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Collections;
-//using MultiplicationGame.Model;
 using MultiplicationGame.Controller;
 
 namespace MultiplicationGame.View
@@ -27,8 +26,15 @@ namespace MultiplicationGame.View
 
         private void SeleccionarOnline()
         {
+            if (SesionController.SesionYaIniciada())
+            {
+                Debug.LogWarning("Ya existe una sesión activa. No se iniciará otra.");
+                return;
+            }
+
             StartCoroutine(ConectarAlServidor());
         }
+
 
         private IEnumerator ConectarAlServidor()
         {
@@ -47,7 +53,7 @@ namespace MultiplicationGame.View
                     string respuesta = request.downloadHandler.text;
 
                     SesionController.RegistrarSesionDesdeJson(respuesta);
-                    SesionController.MostrarDatosSesion();
+                    //SesionController.MostrarDatosSesion();
 
                 }
                 else
