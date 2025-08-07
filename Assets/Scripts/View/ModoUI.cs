@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Networking; // Necesario para UnityWebRequest
+using UnityEngine.Networking;
 using System.Collections;
+//using MultiplicationGame.Model;
+using MultiplicationGame.Controller;
 
 namespace MultiplicationGame.View
 {
@@ -10,6 +12,7 @@ namespace MultiplicationGame.View
         [SerializeField] private Button botonLocal;
         [SerializeField] private Button botonOnline;
         [SerializeField] private UIManager uiManager;
+        [SerializeField] private string servidorURL = "http://localhost/test/index.php";
 
         private void Start()
         {
@@ -29,18 +32,28 @@ namespace MultiplicationGame.View
 
         private IEnumerator ConectarAlServidor()
         {
-            string url = "http://localhost/test/index.php";
-            UnityWebRequest request = UnityWebRequest.Get(url);
-
-            yield return request.SendWebRequest();
-
-            if (request.result == UnityWebRequest.Result.Success)
+            string cuerpo = "{}";
+            using (UnityWebRequest request = new UnityWebRequest(servidorURL, "POST"))
             {
-                Debug.Log("Respuesta del servidor: " + request.downloadHandler.text);
-            }
-            else
-            {
-                Debug.LogError("Error al conectar con el servidor: " + request.error);
+                byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(cuerpo);
+                request.uploadHandler = new UploadHandlerRaw(jsonToSend);
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
+
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    string respuesta = request.downloadHandler.text;
+
+                    SesionController.RegistrarSesionDesdeJson(respuesta);
+                    SesionController.MostrarDatosSesion();
+
+                }
+                else
+                {
+                    Debug.LogError("❌ Error en la conexión: " + request.error);
+                }
             }
         }
     }
