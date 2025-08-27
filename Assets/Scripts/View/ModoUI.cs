@@ -11,7 +11,7 @@ namespace MultiplicationGame.View
         [SerializeField] private Button botonLocal;
         [SerializeField] private Button botonOnline;
         [SerializeField] private UIManager uiManager;
-        [SerializeField] private string servidorURL = "http://localhost/test/index.php";
+        [SerializeField] private string servidorURL = "";
 
         private void Start()
         {
@@ -53,6 +53,7 @@ namespace MultiplicationGame.View
                     string respuesta = request.downloadHandler.text;
 
                     SesionController.RegistrarSesionDesdeJson(respuesta);
+                    uiManager.MostrarPanelEspera();
                     //SesionController.MostrarDatosSesion();
 
                 }

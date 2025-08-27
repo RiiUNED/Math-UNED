@@ -13,13 +13,14 @@ namespace MultiplicationGame.View
         [SerializeField] private GameObject panelResultado;
         [SerializeField] private GameObject panelResultadoMultijugador;
         [SerializeField] private GameObject panelSeleccionModo;
+        [SerializeField] private GameObject panelEspera;
 
         private PlayerGameController controlador;
         private TurnManagerController controladorMultijugador;
 
         private void Awake()
         {
-            if (!panelSeleccionJugadores || !panel1Jugador || !panelMultijugador || !panelResultado)
+            if (!panelSeleccionJugadores || !panel1Jugador || !panelJuego || !panelMultijugador || !panelResultado || !panelResultadoMultijugador || !panelSeleccionModo || !panelEspera)
             {
                 Debug.LogWarning("Algunos paneles no se encontraron en el Canvas. Revisa nombres y jerarquía.");
             }
@@ -78,6 +79,12 @@ namespace MultiplicationGame.View
             if (panelJuego != null) panelJuego.SetActive(true);
         }
 
+        public void MostrarPanelEspera()
+        {
+            OcultarTodosLosPaneles();
+            if (panelEspera != null) panelEspera.SetActive(true);
+        }
+
         public void MostrarPanelMultijugador()
         {
             OcultarTodosLosPaneles();
@@ -126,6 +133,7 @@ namespace MultiplicationGame.View
             if (panelResultado != null) panelResultado.SetActive(false);
             if (panelResultadoMultijugador != null) panelResultadoMultijugador.SetActive(false);
             if (panelSeleccionModo != null) panelSeleccionModo.SetActive(false);
+            if (panelEspera != null) panelEspera.SetActive(false);
         }
     }
 }
