@@ -95,6 +95,8 @@ namespace MultiplicationGame.View
 
                         if (hayMatch)
                         {
+                            // 🔎 Mostrar en consola el JSON recibido cuando hay match
+                            Debug.Log("📦 JSON de inicio de partida (match detectado):\n" + respuesta);
                             // 🔑 Aquí la transición de UI
                             uiManager.MostrarPanelOnline();
                             yield break;
