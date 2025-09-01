@@ -49,7 +49,6 @@ namespace MultiplicationGame.View
 
         private IEnumerator LoopPolling()
         {
-            // ✅ Obtenemos credenciales sin exponer DatosSesion
             if (!SesionController.TryObtenerCredencialesPolling(
                     out int sessionId, out int playerId, out int numeroJugador))
             {
@@ -57,14 +56,9 @@ namespace MultiplicationGame.View
                 yield break;
             }
 
-            // Construimos el payload JSON
-            string cuerpo = "{\"session_id\":" + sessionId +
-                            ",\"player_id\":" + playerId +
-                            ",\"numero_jugador\":" + numeroJugador + "}";
-
+            string cuerpo = SesionController.ConstruirPayloadPollingJson();
             var wait = new WaitForSecondsRealtime(intervaloSegundos);
 
-            // ⏳ Espera inicial antes del primer polling
             yield return new WaitForSecondsRealtime(esperaInicial);
 
             while (true)
@@ -82,8 +76,11 @@ namespace MultiplicationGame.View
                     if (req.result == UnityWebRequest.Result.Success)
                     {
                         string respuesta = req.downloadHandler.text;
+
+                        // ✅ Guardamos todo en el modelo
                         SesionController.RegistrarSesionDesdeJson(respuesta);
 
+                        // 🔍 Intentamos mapear para validar el estado
                         PollDTO dto = null;
                         try { dto = JsonUtility.FromJson<PollDTO>(respuesta); } catch { }
 
@@ -91,13 +88,25 @@ namespace MultiplicationGame.View
                                         !string.IsNullOrEmpty(dto.status) &&
                                         dto.status.Trim().ToLower() == "en espera";
 
-                        bool hayMatch = (!enEspera && dto != null);
+                        bool hayMatch = (!enEspera && dto != null && dto.board_id != 0);
 
                         if (hayMatch)
                         {
-                            // 🔎 Mostrar en consola el JSON recibido cuando hay match
                             Debug.Log("📦 JSON de inicio de partida (match detectado):\n" + respuesta);
-                            // 🔑 Aquí la transición de UI
+
+                            // 🔑 Confirmamos que el modelo ya tiene datos completos
+                            if (SesionController.TryObtenerDatosJuego(out int boardId, out int op1,
+                                                                      out int op2, out int exNum,
+                                                                      out int puntaje, out int skips, out int rival))
+                            {
+                                Debug.Log($"✅ Sesión lista: board {boardId}, rival {rival}, op1={op1}, op2={op2}");
+                            }
+                            else
+                            {
+                                Debug.LogWarning("⚠️ Match detectado pero faltan datos en la sesión.");
+                            }
+
+                            // 🚀 Transición a panel online
                             uiManager.MostrarPanelOnline();
                             yield break;
                         }
@@ -105,7 +114,7 @@ namespace MultiplicationGame.View
                     else
                     {
                         Debug.LogError("Error en polling: " + req.error);
-                        // Puedes decidir si hacer retry o mostrar un mensaje en UI
+                        // Aquí podrías decidir reintentar o notificar al jugador
                     }
                 }
 

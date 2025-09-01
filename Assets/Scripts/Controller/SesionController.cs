@@ -22,15 +22,40 @@ namespace MultiplicationGame.Controller
         // Registra/actualiza sesión a partir de un JSON devuelto por el servidor
         public static void RegistrarSesionDesdeJson(string json)
         {
-            // Debug.Log("📦 JSON recibido crudo:\n" + json);
             try
             {
                 DatosSesion datos = JsonUtility.FromJson<DatosSesion>(json);
-                SesionActual.datos = datos;
+
+                // 🔄 Si ya había sesión, actualizamos en lugar de reemplazar todo
+                if (SesionActual.datos != null)
+                {
+                    var actual = SesionActual.datos;
+
+                    // Actualizamos campo por campo (solo si el nuevo trae info válida)
+                    actual.session_id     = datos.session_id     != 0 ? datos.session_id     : actual.session_id;
+                    actual.player_id      = datos.player_id      != 0 ? datos.player_id      : actual.player_id;
+                    actual.numero_jugador = datos.numero_jugador != 0 ? datos.numero_jugador : actual.numero_jugador;
+
+                    if (!string.IsNullOrEmpty(datos.status)) actual.status = datos.status;
+                    if (!string.IsNullOrEmpty(datos.message)) actual.message = datos.message;
+
+                    if (datos.board_id != 0) actual.board_id = datos.board_id;
+                    if (datos.op1 != 0)      actual.op1 = datos.op1;
+                    if (datos.op2 != 0)      actual.op2 = datos.op2;
+                    if (datos.ex_num != 0)   actual.ex_num = datos.ex_num;
+
+                    actual.puntaje = datos.puntaje; // puede ser 0 legítimo
+                    actual.skips   = datos.skips;
+                    actual.rival   = datos.rival;
+                }
+                else
+                {
+                    SesionActual.datos = datos;
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                Debug.LogError("Error al deserializar la sesión.");
+                Debug.LogError("Error al deserializar la sesión: " + ex.Message);
             }
         }
 
@@ -41,8 +66,10 @@ namespace MultiplicationGame.Controller
 
             if (datos != null)
             {
-                var estado = string.IsNullOrEmpty(datos.status) ? "(sin status)" : datos.status;
-                Debug.Log($"✅ Sesión iniciada (ID: {datos.session_id}, jugador: {datos.numero_jugador}, estado: {estado})");
+                string estado = string.IsNullOrEmpty(datos.status) ? "(sin status)" : datos.status;
+                Debug.Log(
+                    $"✅ Sesión (ID: {datos.session_id}, jugador: {datos.numero_jugador}, estado: {estado}, board: {datos.board_id})"
+                );
             }
             else
             {
@@ -55,12 +82,8 @@ namespace MultiplicationGame.Controller
             return SesionActual.datos != null;
         }
 
-        // ====== NUEVO: API para la View (sin exponer tipos del Model) ======
+        // ====== NUEVO: API para la View ======
 
-        /// <summary>
-        /// Entrega los 3 campos necesarios para el polling, sin exponer DatosSesion.
-        /// View solo necesita: session_id, player_id, numero_jugador.
-        /// </summary>
         public static bool TryObtenerCredencialesPolling(
             out int sessionId, out int playerId, out int numeroJugador)
         {
@@ -77,16 +100,8 @@ namespace MultiplicationGame.Controller
             return true;
         }
 
-        [Serializable]
-        private struct PollingCredsDTO
-        {
-            public int session_id;
-            public int player_id;
-            public int numero_jugador;
-        }
-
         /// <summary>
-        /// Convenience: devuelve el payload JSON listo para enviar en el POST de polling.
+        /// Devuelve el payload JSON listo para enviar en el POST de polling.
         /// </summary>
         public static string ConstruirPayloadPollingJson()
         {
@@ -101,6 +116,37 @@ namespace MultiplicationGame.Controller
             };
 
             return JsonUtility.ToJson(dto);
+        }
+
+        /// <summary>
+        /// Helper para que la View obtenga el último estado "listo para jugar".
+        /// </summary>
+        public static bool TryObtenerDatosJuego(out int boardId, out int op1, out int op2,
+                                                out int exNum, out int puntaje, out int skips, out int rival)
+        {
+            var datos = SesionActual.datos;
+            if (datos == null || datos.board_id == 0)
+            {
+                boardId = op1 = op2 = exNum = puntaje = skips = rival = 0;
+                return false;
+            }
+
+            boardId  = datos.board_id;
+            op1      = datos.op1;
+            op2      = datos.op2;
+            exNum    = datos.ex_num;
+            puntaje  = datos.puntaje;
+            skips    = datos.skips;
+            rival    = datos.rival;
+            return true;
+        }
+
+        [Serializable]
+        private struct PollingCredsDTO
+        {
+            public int session_id;
+            public int player_id;
+            public int numero_jugador;
         }
     }
 }
