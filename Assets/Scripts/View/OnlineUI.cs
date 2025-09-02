@@ -7,27 +7,34 @@ namespace MultiplicationGame.View
     public class OnlineUI : MonoBehaviour
     {
         [Header("UI")]
-        [SerializeField] private SkipOnlineUI skipButton;      // referencia al botón (para SetInteractable)
+        [SerializeField] private SkipOnlineUI skipButton;
+
+        // NUEVO: referencia al AnswerBox (InputRespuesta)
+        [SerializeField] private AnswerBox inputRespuesta;
 
         [Header("Límite local de skips")]
-        [SerializeField] private int skipsMaxCliente = 3;      // tope local (3)
+        [SerializeField] private int skipsMaxCliente = 3;
 
         private void OnEnable()
         {
-            MostrarDatosSesion(); // tu método de logs/diagnóstico
-
-            // Ajusta el estado inicial del botón según el skips actual
+            MostrarDatosSesion();
             ActualizarEstadoBotonDesdeModelo();
         }
 
-        /// <summary>
-        /// Llamado por SkipOnlineUI en cada click.
-        /// Incrementa el contador local de skips y, si llega al límite, desactiva el botón.
-        /// No se contacta con el servidor.
-        /// </summary>
+        // NUEVO: botón "Enviar"
+        public void OnEnviarClicked()
+        {
+            int valor = 0;
+            if (inputRespuesta != null)
+            {
+                // Devuelve 0 si está vacío/placeholder, o el número introducido si no
+                valor = inputRespuesta.GetCurrentAnswer();
+            }
+            Debug.Log($"[OnlineUI] Enviar -> {valor}");
+        }
+
         public void OnSkipClicked()
         {
-            // 1) Lee el estado actual (ya almacenado por tu flujo previo)
             if (!SesionController.TryObtenerDatosJuego(
                 out int boardId, out int op1, out int op2,
                 out int exNum, out int puntaje, out int skipsActuales, out int rival))
@@ -36,16 +43,10 @@ namespace MultiplicationGame.View
                 return;
             }
 
-            // 2) Calcula el nuevo valor local
             int despuesDeClick = skipsActuales + 1;
-
-            // 3) Actualiza el valor en el modelo (local) a través del Controller
-            //    (si no tienes un setter dedicado, puedes reusar RegistrarSesionDesdeJson con un JSON parcial)
-            //    Aquí hacemos un update simple: construimos un JSON con el nuevo 'skips'
             var jsonParcial = "{\"skips\":" + Mathf.Min(despuesDeClick, skipsMaxCliente) + "}";
             SesionController.RegistrarSesionDesdeJson(jsonParcial);
 
-            // 4) Si alcanzó el límite con esta pulsación, desactiva el botón
             if (despuesDeClick >= skipsMaxCliente)
             {
                 if (skipButton != null) skipButton.SetInteractable(false);
@@ -53,15 +54,11 @@ namespace MultiplicationGame.View
             }
             else
             {
-                // Si aún no llegaste al límite, se mantiene activo
                 if (skipButton != null) skipButton.SetInteractable(true);
                 Debug.Log($"[OnlineUI] Skip #{despuesDeClick}/{skipsMaxCliente}. Botón sigue activo.");
             }
         }
 
-        /// <summary>
-        /// Ajusta el estado inicial del botón al entrar al panel (por si ya venías con 2 de servidor).
-        /// </summary>
         private void ActualizarEstadoBotonDesdeModelo()
         {
             if (SesionController.TryObtenerDatosJuego(
@@ -73,7 +70,6 @@ namespace MultiplicationGame.View
             }
             else
             {
-                // Si no hay datos, por seguridad desactivar hasta que lleguen
                 if (skipButton != null) skipButton.SetInteractable(false);
             }
         }
@@ -82,7 +78,6 @@ namespace MultiplicationGame.View
         {
             Debug.Log("=== 📋 Datos de Sesión (via Controller) ===");
 
-            // Credenciales básicas
             if (SesionController.TryObtenerCredencialesPolling(
                 out int sessionId, out int playerId, out int numeroJugador))
             {
@@ -96,7 +91,6 @@ namespace MultiplicationGame.View
                 return;
             }
 
-            // Datos de juego (op1, op2, ex_num, puntaje, skips, rival)
             if (SesionController.TryObtenerDatosJuego(
                 out int boardId, out int op1, out int op2,
                 out int exNum, out int puntaje, out int skips, out int rival))
