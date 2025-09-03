@@ -11,6 +11,7 @@ namespace MultiplicationGame.View
         [SerializeField] private GameObject panelJuego;
         [SerializeField] private GameObject panelMultijugador;
         [SerializeField] private GameObject panelResultado;
+        [SerializeField] private GameObject panelResultadoOnline;
         [SerializeField] private GameObject panelResultadoMultijugador;
         [SerializeField] private GameObject panelSeleccionModo;
         [SerializeField] private GameObject panelEspera;
@@ -21,7 +22,9 @@ namespace MultiplicationGame.View
 
         private void Awake()
         {
-            if (!panelSeleccionJugadores || !panel1Jugador || !panelJuego || !panelMultijugador || !panelResultado || !panelResultadoMultijugador || !panelSeleccionModo || !panelEspera || !panelOnline)
+            if (!panelSeleccionJugadores || !panel1Jugador || !panelJuego || !panelMultijugador
+            || !panelResultado || !panelResultadoMultijugador || !panelSeleccionModo
+            || !panelEspera || !panelOnline || !panelResultadoOnline)
             {
                 Debug.LogWarning("Algunos paneles no se encontraron en el Canvas. Revisa nombres y jerarquía.");
             }
@@ -121,6 +124,19 @@ namespace MultiplicationGame.View
             resultadoUI.MostrarResultado();
         }
 
+        public void MostrarPanelResultadoOnline(bool ganoJugador)
+        {
+            OcultarTodosLosPaneles();
+            if (panelResultadoOnline == null) return;
+
+            panelResultadoOnline.SetActive(true);
+
+            var resultadoUI = panelResultadoOnline.GetComponent<ResultadoOnlineUI>();
+            if (resultadoUI == null) return;
+
+            resultadoUI.MostrarResultado(ganoJugador);
+        }
+
         public void MostrarPanelResultadoMultijugador(int ganador)
         {
             OcultarTodosLosPaneles();
@@ -142,6 +158,7 @@ namespace MultiplicationGame.View
             if (panelSeleccionModo != null) panelSeleccionModo.SetActive(false);
             if (panelEspera != null) panelEspera.SetActive(false);
             if (panelOnline != null) panelOnline.SetActive(false);
+            if (panelResultadoOnline != null) panelResultadoOnline.SetActive(false);
         }
     }
 }

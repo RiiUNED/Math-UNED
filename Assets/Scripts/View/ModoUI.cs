@@ -26,12 +26,13 @@ namespace MultiplicationGame.View
 
         private void SeleccionarOnline()
         {
+            /*
             if (SesionController.SesionYaIniciada())
             {
                 Debug.LogWarning("Ya existe una sesión activa. No se iniciará otra.");
                 return;
             }
-
+            */
             StartCoroutine(ConectarAlServidor());
         }
 
