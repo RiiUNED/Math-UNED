@@ -1,5 +1,5 @@
 using UnityEngine;
-using System; 
+using System;
 
 namespace MultiplicationGame.Controller
 {
@@ -32,21 +32,21 @@ namespace MultiplicationGame.Controller
                     var actual = SesionActual.datos;
 
                     // Actualizamos campo por campo (solo si el nuevo trae info válida)
-                    actual.session_id     = datos.session_id     != 0 ? datos.session_id     : actual.session_id;
-                    actual.player_id      = datos.player_id      != 0 ? datos.player_id      : actual.player_id;
+                    actual.session_id = datos.session_id != 0 ? datos.session_id : actual.session_id;
+                    actual.player_id = datos.player_id != 0 ? datos.player_id : actual.player_id;
                     actual.numero_jugador = datos.numero_jugador != 0 ? datos.numero_jugador : actual.numero_jugador;
 
                     if (!string.IsNullOrEmpty(datos.status)) actual.status = datos.status;
                     if (!string.IsNullOrEmpty(datos.message)) actual.message = datos.message;
 
                     if (datos.board_id != 0) actual.board_id = datos.board_id;
-                    if (datos.op1 != 0)      actual.op1 = datos.op1;
-                    if (datos.op2 != 0)      actual.op2 = datos.op2;
-                    if (datos.ex_num != 0)   actual.ex_num = datos.ex_num;
+                    if (datos.op1 != 0) actual.op1 = datos.op1;
+                    if (datos.op2 != 0) actual.op2 = datos.op2;
+                    if (datos.ex_num != 0) actual.ex_num = datos.ex_num;
 
                     actual.puntaje = datos.puntaje; // puede ser 0 legítimo
-                    actual.skips   = datos.skips;
-                    actual.rival   = datos.rival;
+                    actual.skips = datos.skips;
+                    actual.rival = datos.rival;
                 }
                 else
                 {
@@ -131,13 +131,13 @@ namespace MultiplicationGame.Controller
                 return false;
             }
 
-            boardId  = datos.board_id;
-            op1      = datos.op1;
-            op2      = datos.op2;
-            exNum    = datos.ex_num;
-            puntaje  = datos.puntaje;
-            skips    = datos.skips;
-            rival    = datos.rival;
+            boardId = datos.board_id;
+            op1 = datos.op1;
+            op2 = datos.op2;
+            exNum = datos.ex_num;
+            puntaje = datos.puntaje;
+            skips = datos.skips;
+            rival = datos.rival;
             return true;
         }
 
@@ -148,5 +148,20 @@ namespace MultiplicationGame.Controller
             public int player_id;
             public int numero_jugador;
         }
+
+        // Reset
+        public static void ReiniciarEstadoDeJuegoParaNuevaPartida()
+        {
+            var d = SesionActual.datos;
+            if (d == null) return;
+
+            // 🔸 NO tocar: d.board_id, d.op1, d.op2, d.ex_num  (los trae el inicio de partida)
+            d.puntaje = 0;
+            d.skips = 0;
+            d.rival = 0;
+            d.status = null;
+            d.message = null;
+        }
+
     }
 }

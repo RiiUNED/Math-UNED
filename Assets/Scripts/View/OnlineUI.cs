@@ -39,18 +39,17 @@ namespace MultiplicationGame.View
         [System.Serializable]
         private class OnlinePollDTO
         {
-            public int  session_id;
-            public int  player_id;
-            public int  numero_jugador;
+            public int session_id;
+            public int player_id;
+            public int numero_jugador;
             public bool skip;
-            public int  skips;
-            public int  aciertos;  // Alineado con 'puntaje' del modelo
-            public int  rival;
-            public int  ex_num;
-            public int  res;       // respuesta del jugador (AnswerBox) — en polling será 0
+            public int skips;
+            public int aciertos;  // Alineado con 'puntaje' del modelo
+            public int rival;
+            public int ex_num;
+            public int res;       // respuesta del jugador (AnswerBox) — en polling será 0
         }
 
-        // DTO antiguo (compatibilidad) para detectar fin de partida por 'ganador'
         [System.Serializable]
         private class FinPartidaDTO_Old
         {
@@ -59,7 +58,6 @@ namespace MultiplicationGame.View
             public int puntaje;
         }
 
-        // DTO NUEVO para detectar fin de partida por 'resultado'
         [System.Serializable]
         private class FinPartidaDTO_New
         {
@@ -74,11 +72,7 @@ namespace MultiplicationGame.View
 
         private void OnEnable()
         {
-            MostrarDatosSesion();
-            ActualizarEstadoBotonDesdeModelo();
-            AplicarUIDesdeModelo(); // Inicializa pregunta + barras con lo que ya tenga el modelo
-
-            if (_rutina == null) _rutina = StartCoroutine(LoopPolling());
+            PrepararNuevaPartida();
         }
 
         private void OnDisable()
@@ -90,50 +84,63 @@ namespace MultiplicationGame.View
             }
         }
 
+        // ---------- Preparación de nueva partida ----------
+
+        public void PrepararNuevaPartida()
+        {
+            finPartida = false;
+            ultimoGanadorLocal = false;
+
+            inputRespuesta?.Clear();
+            // ❌ No vaciar pregunta manualmente
+            progresoAciertosPropios?.SetProgress(0);
+            progresoAciertosRival?.SetProgress(0);
+
+            SesionController.ReiniciarEstadoDeJuegoParaNuevaPartida();
+
+            // ✅ Si ya hay op1/op2, esto pinta la pregunta de inmediato
+            AplicarUIDesdeModelo();
+            skipButton?.Resetear();
+
+            // Skip habilitado con skips=0 por defecto (ya lo tienes en el método)
+            ActualizarEstadoBotonDesdeModelo();
+
+            if (_rutina != null) { StopCoroutine(_rutina); _rutina = null; }
+            _rutina = StartCoroutine(LoopPolling());
+        }
+
         // ---------- UI Actions ----------
 
-        // Botón "Enviar": envía JSON con 'res' = valor de AnswerBox (solo aquí)
         public void OnEnviarClicked()
         {
-            if (finPartida) return; // bloqueado si ya terminó
+            if (finPartida) return;
             StartCoroutine(EnviarRespuestaUnaVez());
         }
 
-        // Botón "Skip": envía JSON con skip=true y skips+1
         public void OnSkipClicked()
         {
-            if (finPartida) return; // bloqueado si ya terminó
+            if (finPartida) return;
             StartCoroutine(EnviarSkipUnaVez());
         }
 
-        // ---------- Modelo / UI Helpers ----------
+        // ---------- Helpers UI/Modelo ----------
 
+        // ⬇️ MODIFICADO: si aún no hay datos de juego, asumimos skipsActuales = 0 (inicio de partida)
         private void ActualizarEstadoBotonDesdeModelo()
         {
             if (skipButton == null) return;
 
-            if (SesionController.TryObtenerDatosJuego(
-                out int boardId, out int op1, out int op2,
-                out int exNum, out int puntaje, out int skipsActuales, out int rival))
-            {
-                bool puedePulsar = !finPartida && (skipsActuales < skipsMaxCliente);
-                skipButton.SetInteractable(puedePulsar);
-            }
-            else
-            {
-                skipButton.SetInteractable(false);
-            }
-        }
+            int skipsActuales = 0; // al iniciar una partida siempre es 0
 
-        private void MostrarDatosSesion()
-        {
             if (SesionController.TryObtenerDatosJuego(
                 out int boardId, out int op1, out int op2,
                 out int exNum, out int puntaje, out int skips, out int rival))
             {
-                if (preguntaText != null)
-                    preguntaText.text = $"¿Cuánto es {op1} x {op2}?";
+                skipsActuales = skips;
             }
+
+            bool puedePulsar = !finPartida && (skipsActuales < skipsMaxCliente);
+            skipButton.SetInteractable(puedePulsar);
         }
 
         private void AplicarUIDesdeModelo()
@@ -162,7 +169,7 @@ namespace MultiplicationGame.View
 
             while (true)
             {
-                if (finPartida) yield break; // no seguimos poll cuando termina
+                if (finPartida) yield break;
 
                 if (!SesionController.TryObtenerDatosJuego(
                     out int boardId, out int op1, out int op2,
@@ -174,18 +181,17 @@ namespace MultiplicationGame.View
                     continue;
                 }
 
-                // En polling NUNCA se envía la respuesta del jugador.
                 var dto = new OnlinePollDTO
                 {
-                    session_id     = sessionId,
-                    player_id      = playerId,
+                    session_id = sessionId,
+                    player_id = playerId,
                     numero_jugador = numeroJugador,
-                    skip           = false,
-                    skips          = skips,
-                    aciertos       = puntaje,
-                    rival          = rival,
-                    ex_num         = exNum,
-                    res            = 0 // Valor neutro en polling
+                    skip = false,
+                    skips = skips,
+                    aciertos = puntaje,
+                    rival = rival,
+                    ex_num = exNum,
+                    res = 0
                 };
 
                 string cuerpo = JsonUtility.ToJson(dto);
@@ -194,7 +200,7 @@ namespace MultiplicationGame.View
                 using (var req = new UnityWebRequest(pollingURL, "POST"))
                 {
                     byte[] jsonToSend = System.Text.Encoding.UTF8.GetBytes(cuerpo);
-                    req.uploadHandler   = new UploadHandlerRaw(jsonToSend);
+                    req.uploadHandler = new UploadHandlerRaw(jsonToSend);
                     req.downloadHandler = new DownloadHandlerBuffer();
                     req.SetRequestHeader("Content-Type", "application/json");
                     req.timeout = timeoutSegundos;
@@ -210,8 +216,7 @@ namespace MultiplicationGame.View
                         AplicarUIDesdeModelo();
                         ActualizarEstadoBotonDesdeModelo();
 
-                        // Evaluar fin de partida (nuevo formato + compat)
-                        if (RevisarFinDePartida(respuesta)) yield break; // se inicia transición y se corta polling
+                        if (RevisarFinDePartida(respuesta)) yield break;
                     }
                     else
                     {
@@ -223,7 +228,7 @@ namespace MultiplicationGame.View
             }
         }
 
-        // ---------- Enviar una vez al pulsar "Enviar" ----------
+        // ---------- Enviar ----------
 
         private IEnumerator EnviarRespuestaUnaVez()
         {
@@ -240,15 +245,15 @@ namespace MultiplicationGame.View
 
             var dto = new OnlinePollDTO
             {
-                session_id     = sessionId,
-                player_id      = playerId,
+                session_id = sessionId,
+                player_id = playerId,
                 numero_jugador = numeroJugador,
-                skip           = false,
-                skips          = skips,
-                aciertos       = puntaje,
-                rival          = rival,
-                ex_num         = exNum,
-                res            = respuestaJugador
+                skip = false,
+                skips = skips,
+                aciertos = puntaje,
+                rival = rival,
+                ex_num = exNum,
+                res = respuestaJugador
             };
 
             string cuerpo = JsonUtility.ToJson(dto);
@@ -257,7 +262,7 @@ namespace MultiplicationGame.View
             using (var req = new UnityWebRequest(pollingURL, "POST"))
             {
                 byte[] jsonToSend = System.Text.Encoding.UTF8.GetBytes(cuerpo);
-                req.uploadHandler   = new UploadHandlerRaw(jsonToSend);
+                req.uploadHandler = new UploadHandlerRaw(jsonToSend);
                 req.downloadHandler = new DownloadHandlerBuffer();
                 req.SetRequestHeader("Content-Type", "application/json");
                 req.timeout = timeoutSegundos;
@@ -274,9 +279,8 @@ namespace MultiplicationGame.View
                     ActualizarEstadoBotonDesdeModelo();
 
                     if (inputRespuesta != null)
-                        inputRespuesta.Clear(); // volver al placeholder tras enviar
+                        inputRespuesta.Clear();
 
-                    // Evaluar fin de partida
                     RevisarFinDePartida(respuesta);
                 }
                 else
@@ -286,7 +290,7 @@ namespace MultiplicationGame.View
             }
         }
 
-        // ---------- Enviar una vez al pulsar "Skip" ----------
+        // ---------- Skip ----------
 
         private IEnumerator EnviarSkipUnaVez()
         {
@@ -299,20 +303,19 @@ namespace MultiplicationGame.View
                 yield break;
             }
 
-            // Aumentamos en 1 el contador de skips (respetando el límite local si aplica)
             int skipsAEnviar = Mathf.Min(skipsActuales + 1, skipsMaxCliente);
 
             var dto = new OnlinePollDTO
             {
-                session_id     = sessionId,
-                player_id      = playerId,
+                session_id = sessionId,
+                player_id = playerId,
                 numero_jugador = numeroJugador,
-                skip           = true,              // <- requerido
-                skips          = skipsAEnviar,      // <- aumentamos en 1
-                aciertos       = puntaje,
-                rival          = rival,
-                ex_num         = exNum,
-                res            = 0                  // no se envía respuesta del jugador al hacer skip
+                skip = true,
+                skips = skipsAEnviar,
+                aciertos = puntaje,
+                rival = rival,
+                ex_num = exNum,
+                res = 0
             };
 
             string cuerpo = JsonUtility.ToJson(dto);
@@ -321,7 +324,7 @@ namespace MultiplicationGame.View
             using (var req = new UnityWebRequest(pollingURL, "POST"))
             {
                 byte[] jsonToSend = System.Text.Encoding.UTF8.GetBytes(cuerpo);
-                req.uploadHandler   = new UploadHandlerRaw(jsonToSend);
+                req.uploadHandler = new UploadHandlerRaw(jsonToSend);
                 req.downloadHandler = new DownloadHandlerBuffer();
                 req.SetRequestHeader("Content-Type", "application/json");
                 req.timeout = timeoutSegundos;
@@ -333,14 +336,10 @@ namespace MultiplicationGame.View
                     string respuesta = req.downloadHandler.text;
                     Debug.Log("📩 (Skip) Respuesta del servidor:\n" + respuesta);
 
-                    // Actualizamos el modelo con lo que devuelva el servidor
                     SesionController.RegistrarSesionDesdeJson(respuesta);
-
-                    // Refrescamos UI y estado del botón Skip
                     AplicarUIDesdeModelo();
                     ActualizarEstadoBotonDesdeModelo();
 
-                    // Evaluar fin de partida
                     RevisarFinDePartida(respuesta);
                 }
                 else
@@ -352,10 +351,6 @@ namespace MultiplicationGame.View
 
         // ---------- Fin de partida ----------
 
-        /// <summary>
-        /// Devuelve true si detecta fin de partida (nuevo formato 'resultado' o antiguo 'ganador')
-        /// y dispara la transición.
-        /// </summary>
         private bool RevisarFinDePartida(string respuestaJson)
         {
             if (string.IsNullOrEmpty(respuestaJson))
@@ -363,7 +358,6 @@ namespace MultiplicationGame.View
 
             bool? ganoLocal = null;
 
-            // 📦 NUEVO FORMATO: {"resultado":"ganaste", "puntaje":10, "rival":0, ... }
             if (respuestaJson.Contains("\"resultado\""))
             {
                 try
@@ -372,48 +366,35 @@ namespace MultiplicationGame.View
                     if (finNew != null && !string.IsNullOrEmpty(finNew.resultado))
                     {
                         var res = finNew.resultado.Trim().ToLowerInvariant();
-                        // Consideramos victoria si el servidor manda exactamente "ganaste"
                         ganoLocal = (res == "ganaste");
                         Debug.Log($"[OnlineUI] Fin detectado (nuevo): resultado={finNew.resultado}, puntaje={finNew.puntaje}, rival={finNew.rival}");
                     }
                 }
-                catch { /* ignorar parse fallido */ }
+                catch { }
             }
 
-            // 🧭 COMPATIBILIDAD ANTIGUA: {"ganador":true/false, "mensaje":"...", "puntaje":10}
             if (ganoLocal == null && respuestaJson.Contains("\"ganador\""))
             {
                 try
                 {
                     var finOld = JsonUtility.FromJson<FinPartidaDTO_Old>(respuestaJson);
-                    if (finOld != null)
-                    {
-                        ganoLocal = finOld.ganador;
-                        Debug.Log($"[OnlineUI] Fin detectado (antiguo): ganador={finOld.ganador}, puntaje={finOld.puntaje}");
-                    }
+                    if (finOld != null) ganoLocal = finOld.ganador;
                 }
-                catch { /* ignorar parse fallido */ }
+                catch { }
             }
 
             if (ganoLocal == null) return false;
 
-            // Bloqueamos nuevos envíos/polling
             if (_rutina != null) { StopCoroutine(_rutina); _rutina = null; }
             finPartida = true;
             ultimoGanadorLocal = ganoLocal.Value;
-            ActualizarEstadoBotonDesdeModelo(); // desactiva botones
+            ActualizarEstadoBotonDesdeModelo();
 
-            // Actualizamos barras según el resultado. Requisito: fijar a 10.
             if (ultimoGanadorLocal)
-            {
-                if (progresoAciertosPropios != null) progresoAciertosPropios.SetProgress(10);
-            }
+                progresoAciertosPropios?.SetProgress(10);
             else
-            {
-                if (progresoAciertosRival != null) progresoAciertosRival.SetProgress(10);
-            }
+                progresoAciertosRival?.SetProgress(10);
 
-            // Transición diferida al panel de resultado online
             StartCoroutine(TransicionAPanelResultadoOnline());
             return true;
         }
@@ -422,13 +403,7 @@ namespace MultiplicationGame.View
         {
             yield return new WaitForSecondsRealtime(Mathf.Max(0f, segundosAntesDeResultado));
             if (uiManager != null)
-            {
-                uiManager.MostrarPanelResultadoOnline(ultimoGanadorLocal); // pasa bool con ganador local
-            }
-            else
-            {
-                Debug.LogWarning("[OnlineUI] uiManager no asignado. No se pudo mostrar panelResultadoOnline.");
-            }
+                uiManager.MostrarPanelResultadoOnline(ultimoGanadorLocal);
         }
     }
 }
