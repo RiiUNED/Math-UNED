@@ -11,8 +11,7 @@ namespace MultiplicationGame.View
         [SerializeField] private Button botonLocal;
         [SerializeField] private Button botonOnline;
         [SerializeField] private UIManager uiManager;
-        [SerializeField] private string servidorURL = "";
-
+        [SerializeField] private GameSettings gameSettings;
         private void Start()
         {
             botonLocal.onClick.AddListener(SeleccionarLocal);
@@ -40,7 +39,7 @@ namespace MultiplicationGame.View
         private IEnumerator ConectarAlServidor()
         {
             string cuerpo = "{}";
-            using (UnityWebRequest request = new UnityWebRequest(servidorURL, "POST"))
+            using (UnityWebRequest request = new UnityWebRequest(gameSettings.ApiURL, "POST"))
             {
                 byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(cuerpo);
                 request.uploadHandler = new UploadHandlerRaw(jsonToSend);

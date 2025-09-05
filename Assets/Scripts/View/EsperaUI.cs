@@ -2,16 +2,17 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 using MultiplicationGame.Controller;
+using MultiplicationGame.View;
 
 namespace MultiplicationGame.View
 {
     [DisallowMultipleComponent]
-    public class Espera : MonoBehaviour
+    public class EsperaUI : MonoBehaviour
     {
         [SerializeField] private UIManager uiManager;
 
         [Header("Servidor")]
-        [SerializeField] private string pollingURL = "";          // Endpoint de polling
+        [SerializeField] private GameSettings gameSettings;       // Endpoint de polling
 
         [Header("Timing")]
         [SerializeField] private float intervaloSegundos = 1.5f;  // Intervalo entre polls
@@ -63,7 +64,7 @@ namespace MultiplicationGame.View
 
             while (true)
             {
-                using (var req = new UnityWebRequest(pollingURL, "POST"))
+                using (var req = new UnityWebRequest(gameSettings.ApiURL, "POST"))
                 {
                     byte[] jsonToSend = System.Text.Encoding.UTF8.GetBytes(cuerpo);
                     req.uploadHandler = new UploadHandlerRaw(jsonToSend);

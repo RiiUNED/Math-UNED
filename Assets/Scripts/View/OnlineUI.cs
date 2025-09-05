@@ -23,7 +23,7 @@ namespace MultiplicationGame.View
         [SerializeField] private int skipsMaxCliente = 3;
 
         [Header("Servidor")]
-        [SerializeField] private string pollingURL = "";          // Endpoint (POST)
+        [SerializeField] private GameSettings gameSettings;
         [SerializeField] private float intervaloSegundos = 1.5f;  // Intervalo entre polls
         [SerializeField] private int timeoutSegundos = 10;        // Timeout por request
         [SerializeField] private float esperaInicial = 2f;        // Tiempo antes del primer polling
@@ -197,7 +197,7 @@ namespace MultiplicationGame.View
                 string cuerpo = JsonUtility.ToJson(dto);
                 Debug.Log("[OnlineUI] (Polling) JSON que se envía:\n" + cuerpo);
 
-                using (var req = new UnityWebRequest(pollingURL, "POST"))
+                using (var req = new UnityWebRequest(gameSettings.ApiURL, "POST"))
                 {
                     byte[] jsonToSend = System.Text.Encoding.UTF8.GetBytes(cuerpo);
                     req.uploadHandler = new UploadHandlerRaw(jsonToSend);
@@ -259,7 +259,7 @@ namespace MultiplicationGame.View
             string cuerpo = JsonUtility.ToJson(dto);
             Debug.Log("[OnlineUI] (Enviar) JSON que se envía:\n" + cuerpo);
 
-            using (var req = new UnityWebRequest(pollingURL, "POST"))
+            using (var req = new UnityWebRequest(gameSettings.ApiURL, "POST"))
             {
                 byte[] jsonToSend = System.Text.Encoding.UTF8.GetBytes(cuerpo);
                 req.uploadHandler = new UploadHandlerRaw(jsonToSend);
@@ -321,7 +321,7 @@ namespace MultiplicationGame.View
             string cuerpo = JsonUtility.ToJson(dto);
             Debug.Log("[OnlineUI] (Skip) JSON que se envía:\n" + cuerpo);
 
-            using (var req = new UnityWebRequest(pollingURL, "POST"))
+            using (var req = new UnityWebRequest(gameSettings.ApiURL, "POST"))
             {
                 byte[] jsonToSend = System.Text.Encoding.UTF8.GetBytes(cuerpo);
                 req.uploadHandler = new UploadHandlerRaw(jsonToSend);
