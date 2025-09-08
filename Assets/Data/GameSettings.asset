@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27ec053e197c12e428199dd4f9990864, type: 3}
   m_Name: GameSettings
   m_EditorClassIdentifier: 
-  apiURL: http://192.168.1.132/index.php
+  apiURL: http://math-uned.didactoons.com/index.php
